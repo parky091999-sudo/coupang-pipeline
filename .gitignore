@@ -1,0 +1,23 @@
+# 환경변수 (API 키, 비밀번호)
+.env
+
+# 쓰레드 로그인 쿠키 (세션 정보)
+data/threads_cookies.json
+
+# 로컬 실행 데이터
+data/products.json
+data/posted_ids.json
+data/*.png
+data/*.html
+
+# 디버그 스크립트
+debug_*.py
+check_*.py
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# 로그
+logs/
