@@ -24,27 +24,63 @@ logger = logging.getLogger(__name__)
 API_URL = "https://openapi.naver.com/v1/search/shop.json"
 
 # 카테고리별 키워드 — (키워드, 카테고리힌트) 튜플
+# 전략: 싸고 좋은 상품 X → 피드에서 "이게 뭐야?" 반응 나오는 상품 O
+# 기준: 보는 순간 신기하거나 웃기거나 공감되는 것
 SEARCH_KEYWORDS = [
-    # 뷰티
-    ("스킨케어 추천", "뷰티"),
-    ("선크림 추천", "뷰티"),
-    ("에센스 추천", "뷰티"),
-    ("마스크팩 추천", "뷰티"),
-    ("클렌징 추천", "뷰티"),
-    # 생활용품
-    ("주방용품 추천", "생활"),
-    ("생활용품 특가", "생활"),
-    ("욕실용품 추천", "생활"),
-    # 식품
-    ("간식 추천", "식품"),
-    ("건강식품 추천", "식품"),
-    ("음료 추천", "식품"),
-    # 패션/잡화
-    ("여성의류 추천", "패션"),
-    ("가방 추천", "패션"),
+    # 전동/자동 가젯 — 평범한 것의 전동화된 버전은 항상 신기함
+    ("전동 안마기 가정용", "생활"),
+    ("자동 주방 도구", "생활"),
+    ("전동 청소 도구", "생활"),
+    ("자동 반려동물 장난감", "반려동물"),
+    # 스트레스 해소 / 운동 — 집에서 혼자 쓰는 특이한 운동기구
+    ("복싱 샌드백 가정용", "생활"),
+    ("스트레스 해소 장난감 성인", "생활"),
+    ("진동 마사지기 목", "생활"),
+    ("허리 마사지 의자", "생활"),
+    # 반려동물 — 동물 반응 영상은 항상 바이럴
+    ("고양이 자동 장난감", "반려동물"),
+    ("강아지 재미있는 장난감", "반려동물"),
+    # 수면 / 건강 — 고민 있는 사람들이 많아서 공감 폭발
+    ("코골이 방지 용품", "생활"),
+    ("수면 안대 신기한", "생활"),
+    # 주방 / 식탁 — 유튜브 쇼핑 영상에 자주 나오는 유형
+    ("전동 와인오프너", "생활"),
+    ("아보카도 커터 주방", "생활"),
+    ("진공 보관 용기 전동", "생활"),
+    # 욕실 / 뷰티 가젯
+    ("전동 세안기 클렌저", "생활"),
+    ("피부 관리 LED 마스크", "생활"),
 ]
 
-MIN_LPRICE = 3_000
+MIN_LPRICE = 15_000  # 15,000원 미만 단순 소품 제외
+
+# 같은 배치 내 중복 방지 — 같은 그룹 키워드가 상품명에 있으면 동일 유형으로 판단
+# 한 배치에서 같은 유형은 1개만 허용
+_TYPE_GROUPS: list[list[str]] = [
+    ["led마스크", "led 마스크", "피부관리기", "피부 관리 led", "led피부관리"],
+    ["마사지의자", "안마의자", "마사지 의자"],
+    ["안마기", "마사지기", "마사지건", "마사지 건"],
+    ["공기청정기"],
+    ["로봇청소기", "청소기"],
+    ["에어프라이어"],
+    ["가습기"],
+    ["제습기"],
+    ["선풍기", "써큘레이터"],
+    ["블루투스 스피커", "블루투스스피커"],
+    ["반려동물 자동", "고양이 자동", "강아지 자동"],
+    ["코골이"],
+]
+
+
+def _get_product_type(name: str) -> str | None:
+    """상품명에서 유형 ID 추출 — 같은 유형이면 같은 문자열 반환"""
+    name_lower = name.lower().replace(" ", "")
+    for group in _TYPE_GROUPS:
+        for kw in group:
+            if kw.replace(" ", "") in name_lower:
+                return group[0]
+    return None
+
 
 # 상품명에서 제거할 광고성/불필요 패턴
 _NAME_NOISE = re.compile(
@@ -87,6 +123,19 @@ def _calc_discount_rate(lprice: int, hprice: int) -> int:
     return 0
 
 
+def _is_bad_name(name: str) -> bool:
+    """중국산 키워드 도배 상품명 감지 — 단어 수 많고 의미 없는 수식어 나열"""
+    words = name.split()
+    # 단어 10개 이상이면 키워드 스터핑 의심
+    if len(words) >= 10:
+        return True
+    # 색상+소재+용도+수량 다 때려박은 패턴 (예: "블랙을", "소 실버 1개")
+    noise_patterns = ["블랙을", "실버 1개", "블루를", "화이트를", "측정기용"]
+    if any(p in name for p in noise_patterns):
+        return True
+    return False
+
+
 def _to_product(item: dict, category_hint: str = "") -> dict | None:
     """네이버 API 응답 → 파이프라인 공통 포맷"""
     raw_name = _strip_html(item.get("title", ""))
@@ -94,6 +143,9 @@ def _to_product(item: dict, category_hint: str = "") -> dict | None:
         return None
 
     name = _clean_name(raw_name)
+
+    if _is_bad_name(name):
+        return None
 
     lprice = int(item.get("lprice", 0) or 0)
     hprice = int(item.get("hprice", 0) or 0)
@@ -129,6 +181,7 @@ def scrape_deals(max_items: int = MAX_PRODUCTS_PER_RUN) -> list[dict]:
     coupang_products: list[dict] = []
     all_products: list[dict] = []
     seen_names: set[str] = set()
+    seen_types: set[str] = set()  # 유형 중복 방지
 
     for keyword, cat_hint in SEARCH_KEYWORDS:
         if len(coupang_products) >= max_items:
@@ -142,13 +195,21 @@ def scrape_deals(max_items: int = MAX_PRODUCTS_PER_RUN) -> list[dict]:
                 product = _to_product(item, category_hint=cat_hint)
                 if not product:
                     continue
-                key = product["name"][:15]
+                # 상품명 중복 제거
+                key = product["name"][:8]
                 if key in seen_names:
                     continue
                 seen_names.add(key)
 
                 is_coupang = "쿠팡" in product["mall_name"]
                 if is_coupang:
+                    # 유형 중복 제거 — 쿠팡 상품끼리만 비교 (비쿠팡이 슬롯 차지 방지)
+                    ptype = _get_product_type(product["name"])
+                    if ptype and ptype in seen_types:
+                        logger.info(f"  유형 중복 제외 [{ptype}]: {product['name'][:30]}")
+                        continue
+                    if ptype:
+                        seen_types.add(ptype)
                     coupang_products.append(product)
                     logger.info(f"  [쿠팡/{cat_hint}] {product['name'][:40]} | {product['price']}")
                 else:
@@ -161,13 +222,7 @@ def scrape_deals(max_items: int = MAX_PRODUCTS_PER_RUN) -> list[dict]:
             logger.warning(f"키워드 오류 ({keyword}): {e}")
 
     result = coupang_products[:max_items]
-    if len(result) < max_items:
-        needed = max_items - len(result)
-        result += all_products[:needed]
-        if all_products:
-            logger.info(f"  쿠팡 상품 부족 → 기타 mall 상품 {needed}개 추가")
-
-    logger.info(f"최종 수집: {len(result)}개 (쿠팡 {len(coupang_products)}개 포함)")
+    logger.info(f"최종 수집: {len(result)}개 (쿠팡만)")
     return result
 
 

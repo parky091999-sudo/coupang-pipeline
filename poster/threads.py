@@ -274,13 +274,14 @@ async def add_comment(page: Page, post_url: str | None, comment_text: str):
     logger.info("댓글 작성 완료")
 
 
-async def post_all_products(contents: list[dict]) -> list[str]:
+async def post_all_products(contents: list[dict]) -> tuple[list[str], list[str]]:
     """
     여러 상품을 하나의 브라우저 세션으로 포스팅 (로그인 1회)
     상품당 2개 게시글: 글1(자연스러운 추천) → 글2(링크)
-    반환: 성공적으로 포스팅된 상품의 product_url 목록
+    반환: (포스팅된 product_url 목록, story 게시글 Threads URL 목록)
     """
     posted_urls: list[str] = []
+    story_thread_urls: list[str] = []
 
     async with async_playwright() as p:
         browser = await p.chromium.launch(headless=False)
@@ -306,17 +307,11 @@ async def post_all_products(contents: list[dict]) -> list[str]:
 
                 logger.info(f"[{i}/{len(contents)}] 포스팅: {name}")
                 try:
-                    # 글1: 자연스러운 추천 (이미지 포함)
-                    await post_thread(page, post_text_1, image_url)
-                    logger.info(f"  글1 완료")
-
-                    # 글2: 링크 (이미지 없음, 짧은 간격 후)
-                    if post_text_2:
-                        await asyncio.sleep(8)
-                        await post_thread(page, post_text_2, None)
-                        logger.info(f"  글2(링크) 완료")
-
-                    logger.info(f"[{i}/{len(contents)}] 완료")
+                    # 게시글 1개 (스토리 + 코드 안내 통합)
+                    story_url = await post_thread(page, post_text_1, image_url)
+                    if story_url:
+                        story_thread_urls.append(story_url)
+                    logger.info(f"  [{i}] 완료")
                     posted_urls.append(product_url)
 
                     if i < len(contents):
@@ -328,7 +323,7 @@ async def post_all_products(contents: list[dict]) -> list[str]:
         finally:
             await browser.close()
 
-    return posted_urls
+    return posted_urls, story_thread_urls
 
 
 async def post_product(content: dict):

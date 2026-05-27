@@ -11,6 +11,13 @@ THREADS_PASSWORD = os.getenv("THREADS_PASSWORD")
 NAVER_CLIENT_ID = os.getenv("NAVER_CLIENT_ID", "")
 NAVER_CLIENT_SECRET = os.getenv("NAVER_CLIENT_SECRET", "")
 
+# Groq API - 댓글 자동 대댓글 생성 (무료, 하루 14,400 요청)
+GROQ_API_KEY = os.getenv("GROQ_API_KEY", "")
+
+# YouTube Data API v3 - 트렌딩 상품 탐지 (무료, 하루 10,000 units)
+# Google Cloud Console → YouTube Data API v3 활성화 → API 키 발급
+YOUTUBE_API_KEY = os.getenv("YOUTUBE_API_KEY", "")
+
 # 쿠팡파트너스 수익화 활성화 여부
 # False: 링크만 게시, 광고 고지 없음 (수익 발생 전)
 # True:  [광고] 표시 + 공정위 고지문 자동 추가 (파트너스 가입 후 True로 변경)

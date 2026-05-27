@@ -1,0 +1,35 @@
+{
+  "next_code": 16,
+  "products": {
+    "https://link.coupang.com/re/PCSNAVERPCSDP?pageKey=496566&ctag=496566&lptag=l5228": {
+      "code": "002",
+      "name": "브리즈 이동접이식 2단 행거 BR702",
+      "url": "https://link.coupang.com/re/PCSNAVERPCSDP?pageKey=496566&ctag=496566&lptag=l52288982&itemId=2928858&vendorItemId=3002316983&spec=10305197",
+      "image_url": "https://shopping-phinf.pstatic.net/main_5503362/55033624811.jpg"
+    },
+    "https://link.coupang.com/re/PCSNAVERPCSDP?pageKey=8634010962&ctag=8634010962&lpt": {
+      "code": "010",
+      "name": "Reencle Prime 가정용 음식물 쓰레기 처리기 하이브리드식 전자동",
+      "url": "https://link.coupang.com/re/PCSNAVERPCSDP?pageKey=8634010962&ctag=8634010962&lptag=V95305904796&itemId=25050336169&vendorItemId=95305904796&spec=10305199",
+      "image_url": "https://shopping-phinf.pstatic.net/main_5980471/59804712787.jpg"
+    },
+    "https://www.coupang.com/test/abc": {
+      "code": "012",
+      "name": "마롱즈 펠트 스퀘어 수납바구니",
+      "url": "https://www.coupang.com/test/abc",
+      "image_url": ""
+    },
+    "https://link.coupang.com/re/PCSNAVERPCSDP?pageKey=9588520982&ctag=9588520982&lpt": {
+      "code": "014",
+      "name": "바이타 허리마사지 의자 방문설치",
+      "url": "https://link.coupang.com/re/PCSNAVERPCSDP?pageKey=9588520982&ctag=9588520982&lptag=l113220598629&itemId=69211089235&vendorItemId=93177386266&spec=10305197",
+      "image_url": "https://shopping-phinf.pstatic.net/main_5889719/58897197018.jpg"
+    },
+    "https://link.coupang.com/re/PCSNAVERPCSDP?pageKey=9391530333&ctag=9391530333&lpt": {
+      "code": "015",
+      "name": "Lg프라엘 led마스크 의료기기용품허가취득 팔자주름 눈가주름펴고가뿐하게 동창회가자",
+      "url": "https://link.coupang.com/re/PCSNAVERPCSDP?pageKey=9391530333&ctag=9391530333&lptag=I27890028689&itemId=27890028689&vendorItemId=94849022623&spec=10305199",
+      "image_url": "https://shopping-phinf.pstatic.net/main_5917954/59179545917.jpg"
+    }
+  }
+}

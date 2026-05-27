@@ -16,11 +16,13 @@ import time
 import json
 
 sys.path.append(os.path.dirname(__file__))
-from config import SCHEDULE_TIMES, MAX_PRODUCTS_PER_RUN, LOG_DIR, NAVER_CLIENT_ID, DATA_DIR
+from config import SCHEDULE_TIMES, MAX_PRODUCTS_PER_RUN, LOG_DIR, NAVER_CLIENT_ID, DATA_DIR, YOUTUBE_API_KEY
 from scraper.coupang import scrape_homepage_deals
 from scraper.naver_shopping import scrape_deals, save_products
 from generator.content import generate_posts_batch
 from poster.threads import post_all_products
+from poster.comment_replier import add_recent_post, check_and_reply_comments
+from poster.engager import run_engagement_session
 
 POSTED_IDS_PATH = os.path.join(DATA_DIR, "posted_ids.json")
 
@@ -64,15 +66,23 @@ async def run_pipeline():
     logger.info(f"파이프라인 시작: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     logger.info("=" * 50)
 
-    # 1단계: 상품 수집 (네이버 쇼핑 API 우선 → 쿠팡 홈 폴백)
-    if NAVER_CLIENT_ID:
-        logger.info("[1/3] 네이버 쇼핑 API로 상품 수집...")
-        products = scrape_deals(max_items=MAX_PRODUCTS_PER_RUN)
-    else:
-        products = []
+    # 1단계: 상품 수집 (YouTube 트렌딩 우선 → 네이버 보충 → 쿠팡 홈 폴백)
+    products = []
+
+    if YOUTUBE_API_KEY:
+        logger.info("[1/3] YouTube 트렌딩 상품 수집...")
+        from scraper.youtube_trending import scrape_trending_products
+        products = scrape_trending_products(max_items=MAX_PRODUCTS_PER_RUN)
+        logger.info(f"  → YouTube {len(products)}개 수집")
+
+    if len(products) < MAX_PRODUCTS_PER_RUN and NAVER_CLIENT_ID:
+        needed = MAX_PRODUCTS_PER_RUN - len(products)
+        logger.info(f"[1/3] 네이버 쇼핑으로 {needed}개 보충...")
+        extra = scrape_deals(max_items=needed)
+        products.extend(extra)
 
     if not products:
-        logger.info("[1/3] 네이버 API 미설정 또는 결과 없음 → 쿠팡 홈 폴백...")
+        logger.info("[1/3] YouTube/네이버 결과 없음 → 쿠팡 홈 폴백...")
         products = await scrape_homepage_deals(max_items=MAX_PRODUCTS_PER_RUN)
 
     if not products:
@@ -100,15 +110,33 @@ async def run_pipeline():
     # 3단계: 쓰레드 포스팅 (로그인 1회로 전체 처리)
     logger.info("[3/3] 쓰레드 포스팅...")
     try:
-        posted_urls = await post_all_products(contents)
+        posted_urls, story_urls = await post_all_products(contents)
         # 성공한 상품만 posted_ids에 저장
         for url in posted_urls:
             posted_ids.add(url[:80] if url else "")
         posted_ids.discard("")
         save_posted_ids(posted_ids)
+        # story 게시글 URL 등록 (댓글 감지 대상)
+        for url in story_urls:
+            add_recent_post(url, "story")
         logger.info(f"  → {len(posted_urls)}개 포스팅 완료, 중복 방지 목록 저장")
     except Exception as e:
         logger.error(f"포스팅 오류: {e}")
+        return
+
+    # 4단계: 이전 게시글 댓글 감지 → 자동 대댓글
+    logger.info("[4/4] 댓글 대댓글 확인...")
+    try:
+        await check_and_reply_comments()
+    except Exception as e:
+        logger.error(f"대댓글 오류: {e}")
+
+    # 5단계: 타 계정 게시글에 자연스러운 댓글 (노출 확대)
+    logger.info("[5/5] 타 계정 게시글 댓글 활동...")
+    try:
+        await run_engagement_session(max_comments=10)
+    except Exception as e:
+        logger.error(f"댓글 활동 오류: {e}")
 
     logger.info("파이프라인 완료!")
 

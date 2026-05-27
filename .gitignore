@@ -21,3 +21,13 @@ __pycache__/
 
 # 로그
 logs/
+
+# 임시 미리보기 파일
+preview_*.html
+dryrun_preview_*.html
+
+# SSH 키
+ssh-key/
+
+# Playwright MCP 캐시
+.playwright-mcp/

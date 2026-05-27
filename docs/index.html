@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>꿀픽 | 보다가 이게 뭐야 싶은 것들</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Noto Sans KR', sans-serif;
+    background: #f7f7f7;
+    color: #222;
+    min-height: 100vh;
+  }
+  header {
+    background: #fff;
+    padding: 18px 16px 12px;
+    text-align: center;
+    border-bottom: 1px solid #efefef;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 1px 6px rgba(0,0,0,.06);
+  }
+  .logo {
+    font-size: 1.6rem;
+    font-weight: 900;
+    color: #F5A623;
+    letter-spacing: -0.5px;
+  }
+  .tagline {
+    font-size: 0.8rem;
+    color: #999;
+    margin-top: 2px;
+  }
+  .search-row {
+    margin-top: 10px;
+    display: flex;
+    gap: 8px;
+    max-width: 480px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  #search {
+    flex: 1;
+    padding: 9px 14px;
+    border: 1.5px solid #e0e0e0;
+    border-radius: 22px;
+    font-size: 0.88rem;
+    outline: none;
+    transition: border-color .2s;
+  }
+  #search:focus { border-color: #F5A623; }
+  .count-label {
+    font-size: 0.8rem;
+    color: #aaa;
+    text-align: center;
+    padding: 10px 0 4px;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(155px, 1fr));
+    gap: 12px;
+    padding: 12px 14px 24px;
+    max-width: 640px;
+    margin: 0 auto;
+  }
+  .card {
+    background: #fff;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 1px 6px rgba(0,0,0,.07);
+    display: flex;
+    flex-direction: column;
+  }
+  .card img {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
+    background: #f0f0f0;
+  }
+  .card.no-img img { display: none; }
+  .card-body {
+    padding: 10px 10px 12px;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+  }
+  .badge {
+    display: inline-block;
+    background: #FFF8E1;
+    color: #E65100;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 20px;
+    margin-bottom: 6px;
+    align-self: flex-start;
+  }
+  .name {
+    font-size: 0.82rem;
+    line-height: 1.45;
+    color: #333;
+    flex: 1;
+    margin-bottom: 10px;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .btn {
+    display: block;
+    text-align: center;
+    background: #FF6F00;
+    color: #fff;
+    text-decoration: none;
+    padding: 8px 6px;
+    border-radius: 9px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    transition: background .15s;
+  }
+  .btn:hover { background: #e65100; }
+  .empty {
+    text-align: center;
+    padding: 60px 20px;
+    color: #bbb;
+    font-size: 0.9rem;
+    grid-column: 1 / -1;
+  }
+  footer {
+    text-align: center;
+    padding: 20px 16px 36px;
+    color: #ccc;
+    font-size: 0.72rem;
+  }
+  .disclosure {
+    margin-top: 8px;
+    font-size: 0.68rem;
+    color: #bbb;
+    max-width: 320px;
+    margin-left: auto;
+    margin-right: auto;
+    line-height: 1.5;
+  }
+  #no-result {
+    display: none;
+    text-align: center;
+    padding: 40px;
+    color: #bbb;
+    font-size: 0.88rem;
+    grid-column: 1/-1;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">🍯 꿀픽</div>
+  <div class="tagline">보다가 이게 뭐야 싶은 것들만</div>
+  <div class="search-row">
+    <input type="search" id="search" placeholder="코드(예: 001) 또는 상품명 검색" autocomplete="off" inputmode="search">
+  </div>
+</header>
+
+<div class="count-label" id="count-label">상품 5개</div>
+
+<div class="grid" id="grid">
+
+    <div class="card" data-code="002" data-name="브리즈 이동접이식 2단 행거 br702">
+      <img src="https://shopping-phinf.pstatic.net/main_5503362/55033624811.jpg" alt="브리즈 이동접이식 2단 행거 BR702" loading="lazy" onerror="this.parentElement.classList.add('no-img')">
+      <div class="card-body">
+        <span class="badge">[002]</span>
+        <p class="name">브리즈 이동접이식 2단 행거 BR702</p>
+        <a href="https://link.coupang.com/re/PCSNAVERPCSDP?pageKey=496566&ctag=496566&lptag=l52288982&itemId=2928858&vendorItemId=3002316983&spec=10305197" target="_blank" rel="noopener noreferrer" class="btn">쿠팡에서 보기 →</a>
+      </div>
+    </div>
+    <div class="card" data-code="010" data-name="reencle prime 가정용 음식물 쓰레기 처리기 하이브리드식 전자동">
+      <img src="https://shopping-phinf.pstatic.net/main_5980471/59804712787.jpg" alt="Reencle Prime 가정용 음식물 쓰레기 처리기 하이브리드식 전자동" loading="lazy" onerror="this.parentElement.classList.add('no-img')">
+      <div class="card-body">
+        <span class="badge">[010]</span>
+        <p class="name">Reencle Prime 가정용 음식물 쓰레기 처리기 하이브리드식 전자동</p>
+        <a href="https://link.coupang.com/re/PCSNAVERPCSDP?pageKey=8634010962&ctag=8634010962&lptag=V95305904796&itemId=25050336169&vendorItemId=95305904796&spec=10305199" target="_blank" rel="noopener noreferrer" class="btn">쿠팡에서 보기 →</a>
+      </div>
+    </div>
+    <div class="card" data-code="012" data-name="마롱즈 펠트 스퀘어 수납바구니">
+      
+      <div class="card-body">
+        <span class="badge">[012]</span>
+        <p class="name">마롱즈 펠트 스퀘어 수납바구니</p>
+        <a href="https://www.coupang.com/test/abc" target="_blank" rel="noopener noreferrer" class="btn">쿠팡에서 보기 →</a>
+      </div>
+    </div>
+    <div class="card" data-code="014" data-name="바이타 허리마사지 의자 방문설치">
+      <img src="https://shopping-phinf.pstatic.net/main_5889719/58897197018.jpg" alt="바이타 허리마사지 의자 방문설치" loading="lazy" onerror="this.parentElement.classList.add('no-img')">
+      <div class="card-body">
+        <span class="badge">[014]</span>
+        <p class="name">바이타 허리마사지 의자 방문설치</p>
+        <a href="https://link.coupang.com/re/PCSNAVERPCSDP?pageKey=9588520982&ctag=9588520982&lptag=l113220598629&itemId=69211089235&vendorItemId=93177386266&spec=10305197" target="_blank" rel="noopener noreferrer" class="btn">쿠팡에서 보기 →</a>
+      </div>
+    </div>
+    <div class="card" data-code="015" data-name="lg프라엘 led마스크 의료기기용품허가취득 팔자주름 눈가주름펴고가뿐하게 동창회가자">
+      <img src="https://shopping-phinf.pstatic.net/main_5917954/59179545917.jpg" alt="Lg프라엘 led마스크 의료기기용품허가취득 팔자주름 눈가주름펴고가뿐하게 동창회가자" loading="lazy" onerror="this.parentElement.classList.add('no-img')">
+      <div class="card-body">
+        <span class="badge">[015]</span>
+        <p class="name">Lg프라엘 led마스크 의료기기용품허가취득 팔자주름 눈가주름펴고가뿐하게 동창회가자</p>
+        <a href="https://link.coupang.com/re/PCSNAVERPCSDP?pageKey=9391530333&ctag=9391530333&lptag=I27890028689&itemId=27890028689&vendorItemId=94849022623&spec=10305199" target="_blank" rel="noopener noreferrer" class="btn">쿠팡에서 보기 →</a>
+      </div>
+    </div>
+  <p id="no-result">검색 결과가 없습니다</p>
+</div>
+
+<footer>
+  <p>© 꿀픽</p>
+  
+</footer>
+
+<script>
+  const input = document.getElementById('search');
+  const cards = Array.from(document.querySelectorAll('.card'));
+  const noResult = document.getElementById('no-result');
+  const countLabel = document.getElementById('count-label');
+
+  input.addEventListener('input', () => {
+    const raw = input.value.trim();
+    const q = raw.replace(/[\[\]]/g, '').toLowerCase();
+    let visible = 0;
+
+    cards.forEach(c => {
+      const match = !q || c.dataset.code.startsWith(q) || c.dataset.name.includes(q);
+      c.style.display = match ? '' : 'none';
+      if (match) visible++;
+    });
+
+    noResult.style.display = visible === 0 ? 'block' : 'none';
+    countLabel.textContent = q ? `${visible}개 검색됨` : `상품 ${cards.length}개`;
+  });
+
+  // URL 해시로 바로 이동: index.html#001
+  const hash = location.hash.replace('#', '').replace(/[\[\]]/g, '');
+  if (hash) {
+    input.value = hash;
+    input.dispatchEvent(new Event('input'));
+    const target = document.querySelector(`.card[data-code="${hash.padStart(3,'0')}"]`);
+    if (target) target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+</script>
+
+</body>
+</html>

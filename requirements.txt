@@ -1,5 +1,6 @@
 playwright
 anthropic
+groq
 schedule
 python-dotenv
 requests
