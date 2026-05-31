@@ -26,10 +26,6 @@ jobs:
           playwright install chromium
           playwright install-deps chromium
 
-      - name: Restore Threads cookies (선택)
-        if: ${{ secrets.THREADS_COOKIES_B64 != '' }}
-        run: echo "${{ secrets.THREADS_COOKIES_B64 }}" | base64 -d > data/threads_cookies.json
-
       - name: Run pipeline
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
