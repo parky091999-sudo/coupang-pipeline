@@ -1,0 +1,51 @@
+name: Daily Pipeline
+
+on:
+  schedule:
+    - cron: '0 0 * * *'   # 매일 09:00 KST (= 00:00 UTC)
+  workflow_dispatch:        # GitHub UI에서 수동 실행 가능
+
+jobs:
+  pipeline:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write       # 페이지 파일 커밋+푸시 권한
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Python dependencies
+        run: pip install -r requirements.txt
+
+      - name: Install Playwright browsers
+        run: |
+          playwright install chromium
+          playwright install-deps chromium
+
+      - name: Restore Threads cookies (선택)
+        if: ${{ secrets.THREADS_COOKIES_B64 != '' }}
+        run: echo "${{ secrets.THREADS_COOKIES_B64 }}" | base64 -d > data/threads_cookies.json
+
+      - name: Run pipeline
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          THREADS_USERNAME:   ${{ secrets.THREADS_USERNAME }}
+          THREADS_PASSWORD:   ${{ secrets.THREADS_PASSWORD }}
+          NAVER_CLIENT_ID:    ${{ secrets.NAVER_CLIENT_ID }}
+          NAVER_CLIENT_SECRET: ${{ secrets.NAVER_CLIENT_SECRET }}
+          YOUTUBE_API_KEY:    ${{ secrets.YOUTUBE_API_KEY }}
+          GROQ_API_KEY:       ${{ secrets.GROQ_API_KEY }}
+        run: python main.py
+
+      - name: Commit updated pages
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/index.html docs/feed.html || true
+          git add data/product_registry.json data/feed_posts.json data/posted_ids.json || true
+          git diff --staged --quiet || git commit -m "auto: daily pipeline $(date -u +%Y-%m-%d)"
+          git push

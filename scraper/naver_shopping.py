@@ -17,6 +17,7 @@ sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 from config import (
     DATA_DIR, MAX_PRODUCTS_PER_RUN,
     NAVER_CLIENT_ID, NAVER_CLIENT_SECRET,
+    REQUIRE_BRAND, CHECK_RATING, MIN_REVIEW_COUNT, MIN_RATING,
 )
 
 logger = logging.getLogger(__name__)
@@ -24,32 +25,34 @@ logger = logging.getLogger(__name__)
 API_URL = "https://openapi.naver.com/v1/search/shop.json"
 
 # 카테고리별 키워드 — (키워드, 카테고리힌트) 튜플
-# 전략: 싸고 좋은 상품 X → 피드에서 "이게 뭐야?" 반응 나오는 상품 O
-# 기준: 보는 순간 신기하거나 웃기거나 공감되는 것
+# 전략: 보는 순간 "이게 뭐야?" "이게 된다고?" 반응 나오는 구체적 아이템
 SEARCH_KEYWORDS = [
-    # 전동/자동 가젯 — 평범한 것의 전동화된 버전은 항상 신기함
-    ("전동 안마기 가정용", "생활"),
-    ("자동 주방 도구", "생활"),
-    ("전동 청소 도구", "생활"),
-    ("자동 반려동물 장난감", "반려동물"),
-    # 스트레스 해소 / 운동 — 집에서 혼자 쓰는 특이한 운동기구
-    ("복싱 샌드백 가정용", "생활"),
-    ("스트레스 해소 장난감 성인", "생활"),
-    ("진동 마사지기 목", "생활"),
-    ("허리 마사지 의자", "생활"),
-    # 반려동물 — 동물 반응 영상은 항상 바이럴
-    ("고양이 자동 장난감", "반려동물"),
-    ("강아지 재미있는 장난감", "반려동물"),
-    # 수면 / 건강 — 고민 있는 사람들이 많아서 공감 폭발
-    ("코골이 방지 용품", "생활"),
-    ("수면 안대 신기한", "생활"),
-    # 주방 / 식탁 — 유튜브 쇼핑 영상에 자주 나오는 유형
-    ("전동 와인오프너", "생활"),
-    ("아보카도 커터 주방", "생활"),
-    ("진공 보관 용기 전동", "생활"),
-    # 욕실 / 뷰티 가젯
-    ("전동 세안기 클렌저", "생활"),
-    ("피부 관리 LED 마스크", "생활"),
+    # 주방 — 특이한 자동화 가젯
+    ("자동 계란 삶기 기계", "주방"),
+    ("전동 채칼 회오리 채썰기", "주방"),
+    ("자동 비누 거품기 센서", "주방"),
+    ("전동 와인오프너 자동", "주방"),
+    ("분리형 계란 분리기", "주방"),
+    # 청소/정리 — 비포&애프터 반응
+    ("욕실 전동 청소 솔 회전", "생활"),
+    ("이불 압축팩 전동펌프", "생활"),
+    ("신발 건조기 냄새 제거", "생활"),
+    ("자동 센서 쓰레기통", "생활"),
+    # 뷰티/홈케어 — 셀프케어 트렌드
+    ("전동 두피 마사지기 샤워", "뷰티"),
+    ("눈 온열 마사지기 찜질", "뷰티"),
+    ("전동 발뒤꿈치 각질 제거기", "뷰티"),
+    ("목 견인 스트레칭 기기", "뷰티"),
+    # 반려동물 — 동물 반응 영상 바이럴
+    ("고양이 자동 레이저 장난감", "반려동물"),
+    ("강아지 간식 발사기 자동", "반려동물"),
+    ("고양이 자동 급수기 분수", "반려동물"),
+    # 수면/건강 — 공감 폭발 키워드
+    ("코골이 방지 자동 기기", "건강"),
+    ("수면 무호흡 방지 기기", "건강"),
+    # 인테리어/감성 소품
+    ("LED 무드등 별빛 프로젝터", "인테리어"),
+    ("자동 아로마 디퓨저 초음파", "인테리어"),
 ]
 
 MIN_LPRICE = 15_000  # 15,000원 미만 단순 소품 제외
@@ -60,6 +63,8 @@ _TYPE_GROUPS: list[list[str]] = [
     ["led마스크", "led 마스크", "피부관리기", "피부 관리 led", "led피부관리"],
     ["마사지의자", "안마의자", "마사지 의자"],
     ["안마기", "마사지기", "마사지건", "마사지 건"],
+    ["두피마사지", "두피 마사지"],
+    ["눈마사지", "눈 마사지", "온열마사지", "아이마스크"],
     ["공기청정기"],
     ["로봇청소기", "청소기"],
     ["에어프라이어"],
@@ -67,8 +72,17 @@ _TYPE_GROUPS: list[list[str]] = [
     ["제습기"],
     ["선풍기", "써큘레이터"],
     ["블루투스 스피커", "블루투스스피커"],
-    ["반려동물 자동", "고양이 자동", "강아지 자동"],
+    ["고양이 자동", "강아지 자동", "반려동물 자동"],
+    ["고양이 급수기", "자동 급수기"],
     ["코골이"],
+    ["신발건조기", "신발 건조기"],
+    ["이불압축", "이불 압축"],
+    ["쓰레기통 자동", "센서 쓰레기통"],
+    ["계란 삶기", "자동계란"],
+    ["채칼", "회오리채썰기"],
+    ["비누거품기", "폼 디스펜서"],
+    ["아로마 디퓨저", "초음파디퓨저"],
+    ["프로젝터 무드등", "별빛 조명", "무드등"],
 ]
 
 
@@ -126,13 +140,22 @@ def _calc_discount_rate(lprice: int, hprice: int) -> int:
 def _is_bad_name(name: str) -> bool:
     """중국산 키워드 도배 상품명 감지 — 단어 수 많고 의미 없는 수식어 나열"""
     words = name.split()
-    # 단어 10개 이상이면 키워드 스터핑 의심
     if len(words) >= 10:
         return True
-    # 색상+소재+용도+수량 다 때려박은 패턴 (예: "블랙을", "소 실버 1개")
     noise_patterns = ["블랙을", "실버 1개", "블루를", "화이트를", "측정기용"]
     if any(p in name for p in noise_patterns):
         return True
+    return False
+
+
+def _has_chinese(text: str) -> bool:
+    """상품명에 중국어 한자가 포함되어 있는지 감지"""
+    for ch in text:
+        cp = ord(ch)
+        if (0x4E00 <= cp <= 0x9FFF   # CJK 통합 한자 (가장 많음)
+                or 0x3400 <= cp <= 0x4DBF   # CJK 확장 A
+                or 0xF900 <= cp <= 0xFAFF): # CJK 호환 한자
+            return True
     return False
 
 
@@ -146,6 +169,16 @@ def _to_product(item: dict, category_hint: str = "") -> dict | None:
 
     if _is_bad_name(name):
         return None
+
+    if _has_chinese(name):
+        return None
+
+    # 브랜드/제조사 둘 다 없으면 노브랜드 중국산 가능성 높음
+    if REQUIRE_BRAND:
+        brand = (item.get("brand") or "").strip()
+        maker = (item.get("maker") or "").strip()
+        if not brand and not maker:
+            return None
 
     lprice = int(item.get("lprice", 0) or 0)
     hprice = int(item.get("hprice", 0) or 0)
@@ -163,13 +196,101 @@ def _to_product(item: dict, category_hint: str = "") -> dict | None:
         "image_url": item.get("image", ""),
         "product_url": item.get("link", ""),
         "badge": item.get("mallName", ""),
-        "brand": item.get("brand", ""),
+        "brand": (item.get("brand") or item.get("maker") or "").strip(),
         "category": item.get("category3", item.get("category2", "")),
         "category_hint": category_hint,
         "mall_name": item.get("mallName", ""),
         "source": "naver_shopping",
         "scraped_at": datetime.now().isoformat(),
     }
+
+
+def _check_coupang_rating(product: dict) -> bool:
+    """
+    Playwright로 쿠팡 상품 페이지 접속 → 별점/리뷰수 확인
+    CHECK_RATING=False이거나 별점 정보를 못 가져오면 True(통과) 반환
+    """
+    if not CHECK_RATING:
+        return True
+
+    url = product.get("product_url", "")
+    if not url:
+        return True
+
+    try:
+        # Naver 리다이렉트 → 실제 쿠팡 URL 추적
+        resp = requests.head(url, allow_redirects=True, timeout=6,
+                             headers={"User-Agent": "Mozilla/5.0"})
+        final_url = resp.url
+        if "coupang.com" not in final_url:
+            return True
+    except Exception:
+        return True  # 리다이렉트 실패 시 패스
+
+    try:
+        from playwright.sync_api import sync_playwright
+        with sync_playwright() as p:
+            browser = p.chromium.launch(headless=True)
+            page = browser.new_page(
+                user_agent=(
+                    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                    "AppleWebKit/537.36 (KHTML, like Gecko) "
+                    "Chrome/124.0.0.0 Safari/537.36"
+                )
+            )
+            page.goto(final_url, wait_until="domcontentloaded", timeout=15000)
+
+            rating_val, review_cnt = 0.0, 0
+
+            # JSON-LD에서 aggregateRating 파싱
+            for script in page.query_selector_all('script[type="application/ld+json"]'):
+                try:
+                    data = json.loads(script.inner_text())
+                    if isinstance(data, list):
+                        data = data[0] if data else {}
+                    ar = data.get("aggregateRating", {})
+                    if ar:
+                        rating_val = float(ar.get("ratingValue", 0) or 0)
+                        review_cnt = int(ar.get("reviewCount") or ar.get("ratingCount") or 0)
+                        if rating_val > 0:
+                            break
+                except Exception:
+                    continue
+
+            # JSON-LD 없으면 페이지 텍스트에서 패턴 추출
+            if rating_val == 0:
+                try:
+                    content = page.content()
+                    m = re.search(r'"ratingValue"\s*:\s*"?([\d.]+)"?', content)
+                    rc = re.search(r'"reviewCount"\s*:\s*"?(\d+)"?', content)
+                    if m:
+                        rating_val = float(m.group(1))
+                    if rc:
+                        review_cnt = int(rc.group(1))
+                except Exception:
+                    pass
+
+            browser.close()
+
+        if rating_val > 0:
+            product["rating"] = rating_val
+            product["review_count"] = review_cnt
+            logger.info(f"  → ★{rating_val} 리뷰 {review_cnt}개")
+
+            if review_cnt < MIN_REVIEW_COUNT:
+                logger.info(f"  → 리뷰 부족 ({review_cnt} < {MIN_REVIEW_COUNT}) 제외")
+                return False
+            if rating_val < MIN_RATING:
+                logger.info(f"  → 별점 미달 (★{rating_val} < ★{MIN_RATING}) 제외")
+                return False
+        else:
+            logger.info("  → 별점 정보 없음, 패스")
+
+        return True
+
+    except Exception as e:
+        logger.warning(f"  → 별점 체크 오류: {e} — 패스")
+        return True
 
 
 def scrape_deals(max_items: int = MAX_PRODUCTS_PER_RUN) -> list[dict]:
@@ -210,6 +331,8 @@ def scrape_deals(max_items: int = MAX_PRODUCTS_PER_RUN) -> list[dict]:
                         continue
                     if ptype:
                         seen_types.add(ptype)
+                    if not _check_coupang_rating(product):
+                        continue
                     coupang_products.append(product)
                     logger.info(f"  [쿠팡/{cat_hint}] {product['name'][:40]} | {product['price']}")
                 else:

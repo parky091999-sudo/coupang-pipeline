@@ -23,25 +23,30 @@ YOUTUBE_VIDEO_URL  = "https://www.googleapis.com/youtube/v3/videos"
 
 # 바이럴 생활용품 영상이 많이 올라오는 키워드
 SEARCH_KEYWORDS = [
+    "이거 없으면 후회 생활용품",
+    "이게 된다고 신기한 물건",
     "생활꿀템 추천",
     "주방 신기한 물건",
+    "처음 보는 신기한 제품",
+    "SNS 유행 생활용품",
+    "신박한 주방용품",
+    "신기한 생활용품 추천",
     "살림템 추천",
     "아이디어 생활용품",
-    "신박한 주방용품",
-    "신기한 생활용품",
-    "이거 없으면 후회 생활용품",
-    "주방 가전 추천",
-    "자취 생활용품 추천",
+    "자취 필수템 추천",
     "집에서 꼭 필요한 물건",
+    "주방 가전 추천",
+    "요즘 핫한 생활용품",
+    "알리 신기한 물건",
 ]
 
-# 한 번에 사용할 키워드 수 (쿼터 절약: 4개 × 100 = 400 units/실행)
-KEYWORDS_PER_RUN = 4
-# 최근 며칠 내 영상만 (14일)
-PUBLISHED_DAYS = 14
+# 한 번에 사용할 키워드 수 (쿼터: 6개 × 100 = 600 units/실행)
+KEYWORDS_PER_RUN = 6
+# 최근 며칠 내 영상만 (30일로 확장)
+PUBLISHED_DAYS = 30
 
 
-def _search_videos(keyword: str, max_results: int = 8) -> list[dict]:
+def _search_videos(keyword: str, max_results: int = 15) -> list[dict]:
     """YouTube에서 최근 영상 검색 — 조회수 순"""
     if not YOUTUBE_API_KEY:
         return []
@@ -143,7 +148,7 @@ def _find_naver_product(product_name: str) -> dict | None:
                 coupang_hit = p
             if coupang_hit:
                 break
-        return coupang_hit  # 쿠팡 상품 없으면 None 반환 (비쿠팡 링크 차단)
+        return coupang_hit  # 쿠팡 링크만 허용 (비쿠팡은 네이버 보안확인 팝업 뜸)
     except Exception as e:
         logger.warning(f"네이버 상품 검색 실패 ({product_name}): {e}")
         return None
@@ -168,7 +173,7 @@ def scrape_trending_products(max_items: int = 5) -> list[dict]:
             break
 
         logger.info(f"[YouTube] 검색: '{keyword}'")
-        videos = _search_videos(keyword, max_results=8)
+        videos = _search_videos(keyword, max_results=15)
         if not videos:
             continue
 

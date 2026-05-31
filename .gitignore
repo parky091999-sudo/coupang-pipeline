@@ -1,33 +1,26 @@
-# 환경변수 (API 키, 비밀번호)
+# 환경 변수 (절대 커밋 금지)
 .env
-
-# 쓰레드 로그인 쿠키 (세션 정보)
-data/threads_cookies.json
-
-# 로컬 실행 데이터
-data/products.json
-data/posted_ids.json
-data/*.png
-data/*.html
-
-# 디버그 스크립트
-debug_*.py
-check_*.py
+ssh-key/
 
 # Python
 __pycache__/
 *.pyc
 *.pyo
+.Python
 
-# 로그
+# 데이터 — 민감 or 재생성 가능
+data/threads_cookies.json
+data/*.png
+data/after_*.html
+data/beauty_*.html
+data/coupang_*.html
+data/products.json
+
+# 로그 & 임시 파일
 logs/
-
-# 임시 미리보기 파일
 preview_*.html
-dryrun_preview_*.html
+dryrun_*.html
 
-# SSH 키
-ssh-key/
-
-# Playwright MCP 캐시
-.playwright-mcp/
+# OS
+.DS_Store
+Thumbs.db

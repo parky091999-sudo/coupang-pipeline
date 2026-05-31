@@ -18,6 +18,12 @@ GROQ_API_KEY = os.getenv("GROQ_API_KEY", "")
 # Google Cloud Console → YouTube Data API v3 활성화 → API 키 발급
 YOUTUBE_API_KEY = os.getenv("YOUTUBE_API_KEY", "")
 
+# 상품 품질 필터
+REQUIRE_BRAND = False     # 별점/리뷰수 필터가 더 강력 — 브랜드 필터는 오탈락 많아 비활성화
+CHECK_RATING = True       # True: Playwright로 쿠팡 별점/리뷰수 확인 (느리지만 정확)
+MIN_REVIEW_COUNT = 100    # 최소 리뷰 수
+MIN_RATING = 4.5          # 최소 별점
+
 # 쿠팡파트너스 수익화 활성화 여부
 # False: 링크만 게시, 광고 고지 없음 (수익 발생 전)
 # True:  [광고] 표시 + 공정위 고지문 자동 추가 (파트너스 가입 후 True로 변경)

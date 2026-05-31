@@ -24,7 +24,45 @@ from poster.threads import post_all_products
 from poster.comment_replier import add_recent_post, check_and_reply_comments
 from poster.engager import run_engagement_session
 
-POSTED_IDS_PATH = os.path.join(DATA_DIR, "posted_ids.json")
+POSTED_IDS_PATH  = os.path.join(DATA_DIR, "posted_ids.json")
+FEED_POSTS_PATH  = os.path.join(DATA_DIR, "feed_posts.json")
+
+
+# ── 피드 데이터 관리 ─────────────────────────────────────────────────────────
+
+def load_feed_posts() -> list[dict]:
+    if not os.path.exists(FEED_POSTS_PATH):
+        return []
+    with open(FEED_POSTS_PATH, encoding="utf-8") as f:
+        return json.load(f)
+
+
+def save_feed_posts(posts: list[dict]):
+    os.makedirs(DATA_DIR, exist_ok=True)
+    with open(FEED_POSTS_PATH, "w", encoding="utf-8") as f:
+        json.dump(posts, f, ensure_ascii=False, indent=2)
+
+
+def append_feed_entries(contents: list[dict], status: str = "generated") -> list[dict]:
+    """콘텐츠 목록을 feed_posts.json 맨 앞에 추가"""
+    now = datetime.now().isoformat()
+    new_entries = [
+        {
+            "timestamp":     now,
+            "product_code":  c.get("product_code", ""),
+            "product_name":  c.get("product", {}).get("name", ""),
+            "product_image": c.get("product", {}).get("image_url", ""),
+            "product_url":   c.get("product", {}).get("product_url", ""),
+            "post_text":     c.get("post_text_1", ""),
+            "threads_url":   None,
+            "status":        status,
+        }
+        for c in contents if c
+    ]
+    existing = load_feed_posts()
+    merged   = new_entries + existing
+    save_feed_posts(merged[:200])  # 최근 200개만 보관
+    return new_entries
 
 
 def load_posted_ids() -> set[str]:
@@ -103,12 +141,17 @@ async def run_pipeline():
     logger.info(f"  → {len(new_products)}개 새 상품 수집 완료")
 
     # 2단계: AI 콘텐츠 생성
-    logger.info("[2/3] AI 게시글 생성...")
+    logger.info("[2/5] AI 게시글 생성...")
     contents = generate_posts_batch(new_products)
     logger.info(f"  → {len(contents)}개 게시글 생성 완료")
 
-    # 3단계: 쓰레드 포스팅 (로그인 1회로 전체 처리)
-    logger.info("[3/3] 쓰레드 포스팅...")
+    # 피드 데이터 저장 (포스팅 전 "generated" 상태로 기록)
+    feed_entries = append_feed_entries(contents, status="generated")
+    logger.info(f"  → 피드 데이터 저장: {len(feed_entries)}개")
+
+    # 3단계: 쓰레드 포스팅
+    logger.info("[3/5] 쓰레드 포스팅...")
+    posting_ok = False
     try:
         posted_urls, story_urls = await post_all_products(contents)
         # 성공한 상품만 posted_ids에 저장
@@ -119,13 +162,24 @@ async def run_pipeline():
         # story 게시글 URL 등록 (댓글 감지 대상)
         for url in story_urls:
             add_recent_post(url, "story")
-        logger.info(f"  → {len(posted_urls)}개 포스팅 완료, 중복 방지 목록 저장")
+        logger.info(f"  → {len(posted_urls)}개 포스팅 완료")
+        posting_ok = len(posted_urls) > 0
+
+        # 포스팅 성공 시 피드 상태 "posted"로 업데이트
+        if posting_ok:
+            existing = load_feed_posts()
+            codes = {e["product_code"] for e in feed_entries}
+            for entry in existing:
+                if entry["product_code"] in codes and entry["status"] == "generated":
+                    # 타임스탬프 기준 최근 항목만 업데이트
+                    if entry.get("timestamp", "") >= feed_entries[0].get("timestamp", ""):
+                        entry["status"] = "posted"
+            save_feed_posts(existing)
     except Exception as e:
-        logger.error(f"포스팅 오류: {e}")
-        return
+        logger.error(f"포스팅 오류: {e} — 페이지 업데이트는 계속 진행")
 
     # 4단계: 이전 게시글 댓글 감지 → 자동 대댓글
-    logger.info("[4/4] 댓글 대댓글 확인...")
+    logger.info("[4/5] 댓글 대댓글 확인...")
     try:
         await check_and_reply_comments()
     except Exception as e:
@@ -137,6 +191,17 @@ async def run_pipeline():
         await run_engagement_session(max_comments=10)
     except Exception as e:
         logger.error(f"댓글 활동 오류: {e}")
+
+    # 페이지 자동 생성 (상품 페이지 + 피드 페이지)
+    logger.info("페이지 업데이트 중...")
+    try:
+        import generate_page
+        import generate_feed_page
+        generate_page.main()
+        generate_feed_page.main()
+        logger.info("  → docs/index.html, docs/feed.html 생성 완료")
+    except Exception as e:
+        logger.error(f"페이지 생성 오류: {e}")
 
     logger.info("파이프라인 완료!")
 

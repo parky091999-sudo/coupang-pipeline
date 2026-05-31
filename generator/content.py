@@ -103,8 +103,11 @@ def generate_post(product: dict) -> dict:
     product_url = product.get("product_url", "")
     image_url = product.get("image_url", "")
 
-    # 상품 코드 할당 ([001], [002]...)
+    # 상품 코드 할당 ([001], [002]...) — 빈 문자열은 차단된 상품
     product_code = assign_code(product_url, name, image_url)
+    if not product_code:
+        logger.info(f"  차단된 상품 스킵: {name[:40]}")
+        return {}
 
     # 글1 하나만 — 스토리 + 해시태그 + 코드 안내 통합
     post_text_1 = _generate_post1_ai(product, product_code)
@@ -132,7 +135,9 @@ def generate_posts_batch(products: list[dict]) -> list[dict]:
     results = []
     for product in products:
         try:
-            results.append(generate_post(product))
+            result = generate_post(product)
+            if result:
+                results.append(result)
         except Exception as e:
             logger.error(f"콘텐츠 생성 실패: {e}")
     return results

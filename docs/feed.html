@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>꿀픽 피드 | Threads 포스팅 기록</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg:      #0d0d0d;
+    --surface: #181818;
+    --surface2: #222;
+    --border:  #2c2c2c;
+    --accent:  #FF6B35;
+    --accent2: #FFD166;
+    --text:    #f0f0f0;
+    --text2:   #777;
+    --green:   #50DC78;
+    --radius:  16px;
+  }
+  body {
+    font-family: -apple-system, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* ── 헤더 ── */
+  header {
+    background: rgba(13,13,13,0.95);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+    padding: 16px;
+    position: sticky; top: 0; z-index: 100;
+    max-width: 640px;
+    margin: 0 auto;
+  }
+  .header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .logo {
+    font-size: 1.5rem;
+    font-weight: 900;
+    letter-spacing: -0.5px;
+  }
+  .logo .accent { color: var(--accent); }
+  .logo .sub { font-size: 0.8rem; color: var(--text2); font-weight: 400; margin-left: 6px; }
+  .nav-btn {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text2);
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 7px 12px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all .15s;
+    white-space: nowrap;
+  }
+  .nav-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* ── 스탯 바 ── */
+  .stat-bar {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 12px 16px 0;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+  }
+  .stat-chip {
+    font-size: 0.72rem;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-weight: 600;
+  }
+  .stat-chip.total   { background: var(--surface2); color: var(--text2); }
+  .stat-chip.posted  { background: rgba(80,220,120,0.1); color: var(--green); border: 1px solid rgba(80,220,120,0.2); }
+  .stat-chip.pending { background: rgba(255,209,102,0.1); color: var(--accent2); border: 1px solid rgba(255,209,102,0.2); }
+  .stat-updated { margin-left: auto; font-size: 0.65rem; color: #444; }
+
+  /* ── 피드 ── */
+  .feed {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 16px 16px 48px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  /* ── 포스트 카드 ── */
+  .post-card {
+    padding: 14px 0 10px;
+    border-bottom: 1px solid #1c1c1c;
+  }
+  .card-meta {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    margin-bottom: 10px;
+    padding-left: 4px;
+  }
+  .code-badge {
+    font-size: 0.68rem;
+    font-weight: 700;
+    background: rgba(255,107,53,0.12);
+    color: var(--accent);
+    padding: 2px 8px;
+    border-radius: 20px;
+    border: 1px solid rgba(255,107,53,0.2);
+  }
+  .status {
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 20px;
+    letter-spacing: 0.04em;
+  }
+  .status.posted    { background: rgba(80,220,120,0.1);  color: var(--green);  border: 1px solid rgba(80,220,120,0.2); }
+  .status.generated { background: rgba(255,209,102,0.1); color: var(--accent2); border: 1px solid rgba(255,209,102,0.2); }
+  .ts { margin-left: auto; font-size: 0.65rem; color: #444; }
+
+  .card-inner {
+    display: flex;
+    gap: 12px;
+  }
+  .avatar-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex-shrink: 0;
+  }
+  .avatar {
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #f8c93a, #f5a623);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+  .thread-line {
+    width: 2px;
+    background: #1e1e1e;
+    flex: 1;
+    min-height: 12px;
+    margin-top: 6px;
+  }
+  .card-body { flex: 1; min-width: 0; }
+  .user-row {
+    display: flex; align-items: center; gap: 6px;
+    margin-bottom: 7px;
+  }
+  .username { font-size: 0.88rem; font-weight: 700; }
+  .post-text {
+    font-size: 0.9rem;
+    line-height: 1.6;
+    color: #d8d8d8;
+    margin-bottom: 10px;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  .img-wrap {
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 10px;
+    max-height: 280px;
+  }
+  .img-wrap img {
+    width: 100%;
+    height: 240px;
+    object-fit: cover;
+    display: block;
+  }
+  .card-links {
+    display: flex; gap: 8px; flex-wrap: wrap;
+  }
+  .threads-link, .product-link {
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 5px 12px;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: opacity .15s;
+  }
+  .threads-link {
+    background: rgba(255,107,53,0.1);
+    color: var(--accent);
+    border: 1px solid rgba(255,107,53,0.2);
+  }
+  .product-link {
+    background: var(--surface2);
+    color: var(--text2);
+    border: 1px solid var(--border);
+  }
+  .threads-link:hover, .product-link:hover { opacity: 0.7; }
+
+  .empty {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text2);
+    font-size: 0.9rem;
+    line-height: 2;
+  }
+  .empty-sub { font-size: 0.78rem; color: #444; }
+
+  /* ── 푸터 ── */
+  footer {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 0 16px 48px;
+  }
+  .disclosure-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px 16px;
+    margin-bottom: 12px;
+  }
+  .disclosure-title {
+    font-size: 0.66rem; font-weight: 700;
+    color: #555; letter-spacing: 0.06em;
+    text-transform: uppercase; margin-bottom: 4px;
+  }
+  .disclosure-text { font-size: 0.69rem; color: var(--text2); line-height: 1.6; }
+  .footer-copy { font-size: 0.64rem; color: #333; text-align: center; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-row">
+    <div class="logo">🍯 <span class="accent">꿀픽</span><span class="sub">피드</span></div>
+    <a class="nav-btn" href="index.html">상품 목록 →</a>
+  </div>
+</header>
+
+<div class="stat-bar">
+  <span class="stat-chip total">전체 0개</span>
+  <span class="stat-chip posted">게시됨 0</span>
+  <span class="stat-chip pending">생성됨 0</span>
+  <span class="stat-updated">업데이트: 2026-05-31 21:22</span>
+</div>
+
+<div class="feed">
+<div class="empty">아직 게시된 포스팅이 없습니다<br><span class="empty-sub">파이프라인이 실행되면 여기에 표시됩니다</span></div>
+</div>
+
+<footer>
+  <div class="disclosure-box">
+    <div class="disclosure-title">안내</div>
+    <div class="disclosure-text">이 페이지에 포함된 링크는 향후 쿠팡파트너스 활동의 일환으로 수수료가 발생할 수 있습니다.</div>
+  </div>
+  <div class="footer-copy">© 꿀픽 · kkul.pick.kr</div>
+</footer>
+
+</body>
+</html>

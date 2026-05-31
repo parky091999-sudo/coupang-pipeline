@@ -1,5 +1,5 @@
 """
-링크인바이오 페이지 생성기
+상품 페이지 생성기
 실행: python generate_page.py
 출력: docs/index.html  → GitHub Pages 호스팅용
 """
@@ -12,19 +12,23 @@ from config import COUPANG_PARTNERS_ACTIVE
 
 OUTPUT_PATH = os.path.join(os.path.dirname(__file__), "docs", "index.html")
 
-_AD_DISCLOSURE = "이 페이지의 일부 링크는 쿠팡파트너스 활동의 일환으로, 구매 시 수수료를 받을 수 있습니다."
+_TICKER_MSG = "이 페이지의 링크는 쿠팡파트너스 활동의 일환으로, 구매 시 일정액의 수수료를 제공받을 수 있습니다"
 
 
 def build_cards(products: list[dict]) -> str:
     if not products:
-        return '<p class="empty">아직 등록된 상품이 없습니다</p>'
+        return '<div class="empty">아직 등록된 상품이 없습니다</div>'
+
+    sorted_products = sorted(products, key=lambda x: int(x["code"]), reverse=True)
+    newest_codes = {p["code"] for p in sorted_products[:3]}
 
     html = ""
-    for p in sorted(products, key=lambda x: x["code"]):
+    for p in sorted_products:
         code = p["code"]
         name = p.get("name", "")
         url = p.get("url") or "#"
         img = p.get("image_url", "")
+        is_new = code in newest_codes
 
         img_tag = (
             f'<img src="{img}" alt="{name}" loading="lazy" '
@@ -32,12 +36,16 @@ def build_cards(products: list[dict]) -> str:
             if img else ""
         )
         target = 'target="_blank" rel="noopener noreferrer"' if url != "#" else ""
+        new_badge = '<span class="badge-new">NEW</span>' if is_new else ""
 
         html += f"""
     <div class="card" data-code="{code}" data-name="{name.lower()}">
       {img_tag}
       <div class="card-body">
-        <span class="badge">[{code}]</span>
+        <div class="badge-row">
+          <span class="badge">[{code}]</span>
+          {new_badge}
+        </div>
         <p class="name">{name}</p>
         <a href="{url}" {target} class="btn">쿠팡에서 보기 →</a>
       </div>
@@ -48,10 +56,14 @@ def build_cards(products: list[dict]) -> str:
 def build_html(products: list[dict]) -> str:
     cards = build_cards(products)
     count = len(products)
-    disclosure = (
-        f'<p class="disclosure">{_AD_DISCLOSURE}</p>'
-        if COUPANG_PARTNERS_ACTIVE else ""
-    )
+
+    if COUPANG_PARTNERS_ACTIVE:
+        footer_disclosure = "이 포스팅은 쿠팡파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다."
+    else:
+        footer_disclosure = "이 페이지에 포함된 링크는 향후 쿠팡파트너스 활동의 일환으로 수수료가 발생할 수 있습니다."
+
+    # 티커 텍스트를 여러 번 반복해서 끊기지 않게
+    ticker_repeated = ("  ·  " + _TICKER_MSG) * 6
 
     return f"""<!DOCTYPE html>
 <html lang="ko">
@@ -59,80 +71,198 @@ def build_html(products: list[dict]) -> str:
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>꿀픽 | 보다가 이게 뭐야 싶은 것들</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
   *, *::before, *::after {{ box-sizing: border-box; margin: 0; padding: 0; }}
+
+  :root {{
+    --bg: #0d0d0d;
+    --surface: #181818;
+    --surface2: #222;
+    --border: #2c2c2c;
+    --accent: #FF6B35;
+    --accent2: #FFD166;
+    --text: #f0f0f0;
+    --text2: #777;
+    --radius: 16px;
+  }}
+
   body {{
-    font-family: -apple-system, BlinkMacSystemFont, 'Noto Sans KR', sans-serif;
-    background: #f7f7f7;
-    color: #222;
+    font-family: -apple-system, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+    background: var(--bg);
+    color: var(--text);
     min-height: 100vh;
   }}
-  header {{
-    background: #fff;
-    padding: 18px 16px 12px;
-    text-align: center;
-    border-bottom: 1px solid #efefef;
+
+  /* ── 쿠팡파트너스 티커 ── */
+  .ticker-wrap {{
+    background: linear-gradient(90deg, #1a0a00, #2a1000, #1a0a00);
+    border-bottom: 1px solid rgba(255,107,53,0.3);
+    overflow: hidden;
+    padding: 7px 0;
     position: sticky;
     top: 0;
+    z-index: 200;
+  }}
+  .ticker-track {{
+    display: flex;
+    width: max-content;
+    animation: ticker 30s linear infinite;
+  }}
+  .ticker-track:hover {{ animation-play-state: paused; }}
+  .ticker-text {{
+    font-size: 0.72rem;
+    color: rgba(255,209,102,0.9);
+    white-space: nowrap;
+    padding-right: 40px;
+    letter-spacing: 0.02em;
+  }}
+  @keyframes ticker {{
+    0%   {{ transform: translateX(0); }}
+    100% {{ transform: translateX(-50%); }}
+  }}
+
+  /* ── 헤더 ── */
+  header {{
+    background: rgba(13,13,13,0.9);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+    padding: 16px 16px 14px;
+    text-align: center;
+    position: sticky;
+    top: 33px;
     z-index: 100;
-    box-shadow: 0 1px 6px rgba(0,0,0,.06);
+  }}
+  .header-top {{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
   }}
   .logo {{
-    font-size: 1.6rem;
+    font-size: 1.8rem;
     font-weight: 900;
-    color: #F5A623;
-    letter-spacing: -0.5px;
+    letter-spacing: -1px;
+    flex: 1;
+    text-align: center;
   }}
+  .logo .accent {{ color: var(--accent); }}
   .tagline {{
-    font-size: 0.8rem;
-    color: #999;
-    margin-top: 2px;
+    font-size: 0.73rem;
+    color: var(--text2);
+    margin-bottom: 10px;
+    letter-spacing: 0.02em;
   }}
-  .search-row {{
-    margin-top: 10px;
+  .header-btns {{
     display: flex;
     gap: 8px;
-    max-width: 480px;
-    margin-left: auto;
-    margin-right: auto;
+    flex-shrink: 0;
+  }}
+  .icon-btn {{
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text2);
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 6px 10px;
+    cursor: pointer;
+    transition: all .15s;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    white-space: nowrap;
+  }}
+  .icon-btn:hover {{
+    border-color: var(--accent);
+    color: var(--accent);
+  }}
+  .icon-btn svg {{ width: 13px; height: 13px; fill: currentColor; }}
+
+  .search-wrap {{
+    margin: 0 auto;
+    max-width: 400px;
+    position: relative;
+  }}
+  .search-wrap::before {{
+    content: '🔍';
+    position: absolute;
+    left: 13px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 13px;
+    pointer-events: none;
   }}
   #search {{
-    flex: 1;
-    padding: 9px 14px;
-    border: 1.5px solid #e0e0e0;
-    border-radius: 22px;
-    font-size: 0.88rem;
+    width: 100%;
+    padding: 9px 14px 9px 36px;
+    background: var(--surface2);
+    border: 1.5px solid var(--border);
+    border-radius: 24px;
+    color: var(--text);
+    font-size: 0.84rem;
     outline: none;
     transition: border-color .2s;
   }}
-  #search:focus {{ border-color: #F5A623; }}
-  .count-label {{
-    font-size: 0.8rem;
-    color: #aaa;
-    text-align: center;
-    padding: 10px 0 4px;
+  #search:focus {{ border-color: var(--accent); }}
+  #search::placeholder {{ color: var(--text2); }}
+
+  /* ── 카운트 바 ── */
+  .count-bar {{
+    max-width: 640px;
+    margin: 13px auto 0;
+    padding: 0 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
   }}
+  .count-label {{ font-size: 0.74rem; color: var(--text2); }}
+  .sort-label {{
+    font-size: 0.7rem;
+    color: var(--text2);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }}
+  .sort-dot {{
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: var(--accent);
+    display: inline-block;
+  }}
+
+  /* ── 그리드 ── */
   .grid {{
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(155px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(158px, 1fr));
     gap: 12px;
-    padding: 12px 14px 24px;
+    padding: 12px 14px 28px;
     max-width: 640px;
     margin: 0 auto;
   }}
+
+  /* ── 카드 ── */
   .card {{
-    background: #fff;
-    border-radius: 14px;
+    background: var(--surface);
+    border-radius: var(--radius);
     overflow: hidden;
-    box-shadow: 0 1px 6px rgba(0,0,0,.07);
+    border: 1px solid var(--border);
     display: flex;
     flex-direction: column;
+    transition: transform .2s ease, border-color .2s, box-shadow .2s;
+  }}
+  .card:hover {{
+    transform: translateY(-4px);
+    border-color: #3a3a3a;
+    box-shadow: 0 12px 32px rgba(0,0,0,0.5);
   }}
   .card img {{
     width: 100%;
     aspect-ratio: 1 / 1;
     object-fit: cover;
-    background: #f0f0f0;
+    background: #1f1f1f;
+    display: block;
   }}
   .card.no-img img {{ display: none; }}
   .card-body {{
@@ -141,21 +271,63 @@ def build_html(products: list[dict]) -> str:
     flex-direction: column;
     flex: 1;
   }}
+  .badge-row {{
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-bottom: 7px;
+  }}
   .badge {{
     display: inline-block;
-    background: #FFF8E1;
-    color: #E65100;
-    font-size: 0.7rem;
+    background: rgba(255,107,53,0.12);
+    color: var(--accent);
+    font-size: 0.67rem;
     font-weight: 700;
     padding: 2px 8px;
     border-radius: 20px;
-    margin-bottom: 6px;
-    align-self: flex-start;
+    border: 1px solid rgba(255,107,53,0.25);
+    flex-shrink: 0;
+  }}
+  .badge-new {{
+    display: inline-block;
+    background: rgba(255,209,102,0.12);
+    color: var(--accent2);
+    font-size: 0.62rem;
+    font-weight: 800;
+    padding: 2px 6px;
+    border-radius: 20px;
+    border: 1px solid rgba(255,209,102,0.25);
+    letter-spacing: 0.04em;
+    flex-shrink: 0;
+  }}
+  .badge-hot {{
+    display: inline-block;
+    background: rgba(255,59,59,0.12);
+    color: #FF6B6B;
+    font-size: 0.62rem;
+    font-weight: 800;
+    padding: 2px 6px;
+    border-radius: 20px;
+    border: 1px solid rgba(255,59,59,0.25);
+    letter-spacing: 0.04em;
+    flex-shrink: 0;
+  }}
+  .badge-best {{
+    display: inline-block;
+    background: rgba(80,220,120,0.12);
+    color: #50DC78;
+    font-size: 0.62rem;
+    font-weight: 800;
+    padding: 2px 6px;
+    border-radius: 20px;
+    border: 1px solid rgba(80,220,120,0.25);
+    letter-spacing: 0.04em;
+    flex-shrink: 0;
   }}
   .name {{
-    font-size: 0.82rem;
-    line-height: 1.45;
-    color: #333;
+    font-size: 0.79rem;
+    line-height: 1.5;
+    color: #c0c0c0;
     flex: 1;
     margin-bottom: 10px;
     display: -webkit-box;
@@ -166,92 +338,280 @@ def build_html(products: list[dict]) -> str:
   .btn {{
     display: block;
     text-align: center;
-    background: #FF6F00;
+    background: var(--accent);
     color: #fff;
     text-decoration: none;
     padding: 8px 6px;
-    border-radius: 9px;
-    font-size: 0.78rem;
+    border-radius: 10px;
+    font-size: 0.75rem;
     font-weight: 700;
-    transition: background .15s;
+    transition: opacity .15s;
   }}
-  .btn:hover {{ background: #e65100; }}
-  .empty {{
+  .btn:hover {{ opacity: 0.82; }}
+
+  .empty, #no-result {{
     text-align: center;
     padding: 60px 20px;
-    color: #bbb;
-    font-size: 0.9rem;
+    color: var(--text2);
+    font-size: 0.88rem;
     grid-column: 1 / -1;
   }}
+  #no-result {{ display: none; }}
+
+  /* ── 푸터 ── */
   footer {{
-    text-align: center;
-    padding: 20px 16px 36px;
-    color: #ccc;
-    font-size: 0.72rem;
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 0 14px 48px;
   }}
-  .disclosure {{
-    margin-top: 8px;
+  .disclosure-box {{
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 13px 16px;
+    margin-bottom: 14px;
+  }}
+  .disclosure-title {{
     font-size: 0.68rem;
-    color: #bbb;
-    max-width: 320px;
-    margin-left: auto;
-    margin-right: auto;
+    font-weight: 700;
+    color: #555;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-bottom: 5px;
+  }}
+  .disclosure-text {{
+    font-size: 0.7rem;
+    color: var(--text2);
+    line-height: 1.65;
+  }}
+  .footer-copy {{
+    font-size: 0.65rem;
+    color: #333;
+    text-align: center;
+  }}
+
+  /* ── QR 모달 ── */
+  .modal-overlay {{
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.75);
+    backdrop-filter: blur(8px);
+    z-index: 500;
+    align-items: center;
+    justify-content: center;
+  }}
+  .modal-overlay.open {{ display: flex; }}
+  .modal-box {{
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 28px 24px 22px;
+    max-width: 300px;
+    width: 90%;
+    text-align: center;
+  }}
+  .modal-title {{
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 18px;
+    color: var(--text);
+  }}
+  #qr-canvas {{
+    display: flex;
+    justify-content: center;
+    margin-bottom: 14px;
+  }}
+  #qr-canvas canvas, #qr-canvas img {{
+    border-radius: 10px;
+    border: 6px solid #fff;
+  }}
+  .modal-url {{
+    font-size: 0.65rem;
+    color: var(--text2);
+    word-break: break-all;
+    margin-bottom: 16px;
     line-height: 1.5;
   }}
-  #no-result {{
-    display: none;
-    text-align: center;
-    padding: 40px;
-    color: #bbb;
-    font-size: 0.88rem;
-    grid-column: 1/-1;
+  .modal-close {{
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text2);
+    font-size: 0.82rem;
+    font-weight: 600;
+    padding: 8px 20px;
+    cursor: pointer;
+    transition: all .15s;
+  }}
+  .modal-close:hover {{ border-color: #555; color: var(--text); }}
+
+  /* ── 공유 토스트 ── */
+  .toast {{
+    position: fixed;
+    bottom: 32px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: #222;
+    border: 1px solid #444;
+    border-radius: 24px;
+    padding: 10px 20px;
+    font-size: 0.82rem;
+    color: var(--text);
+    opacity: 0;
+    transition: all .3s;
+    z-index: 600;
+    white-space: nowrap;
+    pointer-events: none;
+  }}
+  .toast.show {{
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
   }}
 </style>
 </head>
 <body>
 
+<!-- 쿠팡파트너스 안내 티커 -->
+<div class="ticker-wrap">
+  <div class="ticker-track">
+    <span class="ticker-text">📢 {ticker_repeated}</span>
+    <span class="ticker-text">📢 {ticker_repeated}</span>
+  </div>
+</div>
+
 <header>
-  <div class="logo">🍯 꿀픽</div>
+  <div class="header-top">
+    <!-- 왼쪽 여백 (레이아웃 균형) -->
+    <div style="width:70px"></div>
+
+    <div class="logo">🍯 <span class="accent">꿀픽</span></div>
+
+    <div class="header-btns">
+      <a class="icon-btn" href="feed.html" title="피드">📋 피드</a>
+      <button class="icon-btn" onclick="showQR()" title="QR코드">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M3 3h7v7H3V3zm2 2v3h3V5H5zm9-2h7v7h-7V3zm2 2v3h3V5h-3zM3 14h7v7H3v-7zm2 2v3h3v-3H5zm11 0h2v2h-2v-2zm2 2h2v2h-2v-2zm-4 0h2v2h-2v-2zm4-4h2v2h-2v-2zm-4 4h2v2h-2v-2zm4 4h2v2h-2v-2zm-2-2h2v2h-2v-2z"/>
+        </svg>
+        QR
+      </button>
+      <button class="icon-btn" onclick="sharePage()" title="공유">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92-1.31-2.92-2.92-2.92z"/>
+        </svg>
+        공유
+      </button>
+    </div>
+  </div>
+
   <div class="tagline">보다가 이게 뭐야 싶은 것들만</div>
-  <div class="search-row">
-    <input type="search" id="search" placeholder="코드(예: 001) 또는 상품명 검색" autocomplete="off" inputmode="search">
+  <div class="search-wrap">
+    <input type="search" id="search" placeholder="코드(예: 027) 또는 상품명 검색" autocomplete="off" inputmode="search">
   </div>
 </header>
 
-<div class="count-label" id="count-label">상품 {count}개</div>
+<div class="count-bar">
+  <span class="count-label" id="count-label">상품 {count}개</span>
+  <span class="sort-label"><span class="sort-dot"></span> 최신순</span>
+</div>
 
 <div class="grid" id="grid">
 {cards}
-  <p id="no-result">검색 결과가 없습니다</p>
+  <div id="no-result">검색 결과가 없습니다</div>
 </div>
 
 <footer>
-  <p>© 꿀픽</p>
-  {disclosure}
+  <div class="disclosure-box">
+    <div class="disclosure-title">안내</div>
+    <div class="disclosure-text">
+      {footer_disclosure}<br>
+      상품 가격 및 재고는 실시간으로 변동될 수 있으며, 쿠팡 페이지에서 최종 확인 후 구매해 주세요.
+    </div>
+  </div>
+  <div class="footer-copy">© 꿀픽 · kkul.pick.kr</div>
 </footer>
 
+<!-- QR 모달 -->
+<div id="qr-modal" class="modal-overlay" onclick="hideQR()">
+  <div class="modal-box" onclick="event.stopPropagation()">
+    <div class="modal-title">📱 QR코드로 공유</div>
+    <div id="qr-canvas"></div>
+    <div class="modal-url" id="qr-url-text"></div>
+    <button class="modal-close" onclick="hideQR()">닫기</button>
+  </div>
+</div>
+
+<!-- 공유 토스트 -->
+<div class="toast" id="toast">링크가 복사됐어요 ✓</div>
+
 <script>
+  /* ── 클릭 트래킹 (localStorage, 기기별) ── */
+  const CLICK_KEY = 'kkul_clicks';
+  const HOT_THRESHOLD  = 3;
+  const BEST_THRESHOLD = 8;
+
+  function loadClicks() {{
+    try {{ return JSON.parse(localStorage.getItem(CLICK_KEY) || '{{}}'); }}
+    catch {{ return {{}}; }}
+  }}
+  function saveClicks(data) {{
+    localStorage.setItem(CLICK_KEY, JSON.stringify(data));
+  }}
+
+  function applyClickBadges() {{
+    const clicks = loadClicks();
+    document.querySelectorAll('.card').forEach(card => {{
+      const code  = card.dataset.code;
+      const count = clicks[code] || 0;
+      const row   = card.querySelector('.badge-row');
+
+      row.querySelectorAll('.badge-hot, .badge-best').forEach(b => b.remove());
+
+      if (count >= BEST_THRESHOLD) {{
+        const b = document.createElement('span');
+        b.className = 'badge-best';
+        b.textContent = 'BEST';
+        row.appendChild(b);
+      }} else if (count >= HOT_THRESHOLD) {{
+        const b = document.createElement('span');
+        b.className = 'badge-hot';
+        b.textContent = 'HOT 🔥';
+        row.appendChild(b);
+      }}
+    }});
+  }}
+
+  document.querySelectorAll('.btn').forEach(btn => {{
+    btn.addEventListener('click', () => {{
+      const card = btn.closest('.card');
+      if (!card) return;
+      const clicks = loadClicks();
+      clicks[card.dataset.code] = (clicks[card.dataset.code] || 0) + 1;
+      saveClicks(clicks);
+      applyClickBadges();
+    }});
+  }});
+
+  applyClickBadges();
+
+  /* ── 검색 ── */
   const input = document.getElementById('search');
   const cards = Array.from(document.querySelectorAll('.card'));
   const noResult = document.getElementById('no-result');
   const countLabel = document.getElementById('count-label');
 
   input.addEventListener('input', () => {{
-    const raw = input.value.trim();
-    const q = raw.replace(/[\\[\\]]/g, '').toLowerCase();
+    const q = input.value.trim().replace(/[\\[\\]]/g, '').toLowerCase();
     let visible = 0;
-
     cards.forEach(c => {{
       const match = !q || c.dataset.code.startsWith(q) || c.dataset.name.includes(q);
       c.style.display = match ? '' : 'none';
       if (match) visible++;
     }});
-
     noResult.style.display = visible === 0 ? 'block' : 'none';
     countLabel.textContent = q ? `${{visible}}개 검색됨` : `상품 ${{cards.length}}개`;
   }});
 
-  // URL 해시로 바로 이동: index.html#001
   const hash = location.hash.replace('#', '').replace(/[\\[\\]]/g, '');
   if (hash) {{
     input.value = hash;
@@ -259,11 +619,59 @@ def build_html(products: list[dict]) -> str:
     const target = document.querySelector(`.card[data-code="${{hash.padStart(3,'0')}}"]`);
     if (target) target.scrollIntoView({{ behavior: 'smooth', block: 'center' }});
   }}
+
+  /* ── QR 코드 ── */
+  let qrGenerated = false;
+
+  function showQR() {{
+    const modal = document.getElementById('qr-modal');
+    const urlText = document.getElementById('qr-url-text');
+    const url = window.location.href;
+    urlText.textContent = url;
+
+    if (!qrGenerated) {{
+      new QRCode(document.getElementById('qr-canvas'), {{
+        text: url,
+        width: 200,
+        height: 200,
+        colorDark: '#000000',
+        colorLight: '#ffffff',
+        correctLevel: QRCode.CorrectLevel.H,
+      }});
+      qrGenerated = true;
+    }}
+    modal.classList.add('open');
+  }}
+
+  function hideQR() {{
+    document.getElementById('qr-modal').classList.remove('open');
+  }}
+
+  /* ── 공유 ── */
+  function sharePage() {{
+    const url = window.location.href;
+    if (navigator.share) {{
+      navigator.share({{
+        title: '꿀픽 - 보다가 이게 뭐야 싶은 것들',
+        text: '신기한 생활용품 모음',
+        url: url,
+      }}).catch(() => {{}});
+    }} else {{
+      navigator.clipboard.writeText(url).then(() => showToast()).catch(() => {{
+        prompt('링크를 복사하세요:', url);
+      }});
+    }}
+  }}
+
+  function showToast() {{
+    const t = document.getElementById('toast');
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2200);
+  }}
 </script>
 
 </body>
-</html>
-"""
+</html>"""
 
 
 def main():
@@ -277,7 +685,8 @@ def main():
     print(f"생성 완료: {OUTPUT_PATH}")
     print(f"상품 {len(products)}개 포함")
     if products:
-        print("코드 목록:", ", ".join(f"[{p['code']}]" for p in sorted(products, key=lambda x: x['code'])))
+        codes = sorted([p['code'] for p in products], key=lambda x: int(x), reverse=True)
+        print("코드 목록 (최신순):", ", ".join(f"[{c}]" for c in codes))
 
 
 if __name__ == "__main__":
