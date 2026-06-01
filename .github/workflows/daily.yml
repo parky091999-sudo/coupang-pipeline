@@ -4,6 +4,12 @@ on:
   schedule:
     - cron: '5 0 * * *'   # 매일 09:05 KST (= 00:05 UTC) — 정각 부하 회피
   workflow_dispatch:        # GitHub UI에서 수동 실행 가능
+    inputs:
+      skip_delay:
+        description: '랜덤 딜레이 건너뛰기 (테스트용)'
+        required: false
+        default: 'false'
+        type: boolean
 
 jobs:
   pipeline:
@@ -29,6 +35,7 @@ jobs:
           NAVER_CLIENT_SECRET:  ${{ secrets.NAVER_CLIENT_SECRET }}
           YOUTUBE_API_KEY:      ${{ secrets.YOUTUBE_API_KEY }}
           GROQ_API_KEY:         ${{ secrets.GROQ_API_KEY }}
+          SKIP_DELAY:           ${{ github.event.inputs.skip_delay || 'false' }}
         run: python main.py
 
       - name: Commit updated pages

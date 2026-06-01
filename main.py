@@ -101,11 +101,12 @@ logger = logging.getLogger("main")
 async def run_pipeline():
     """전체 파이프라인 1회 실행"""
     import random as _random
-    # 포스팅 시간 랜덤화 — 매일 같은 시간 패턴 방지 (0~25분 랜덤 대기)
-    delay_min = _random.randint(0, 120)  # 9:00~11:00 KST 사이 랜덤 포스팅
-    if delay_min > 0:
-        logger.info(f"랜덤 딜레이: {delay_min}분 대기 중...")
-        await asyncio.sleep(delay_min * 60)
+    skip_delay = os.getenv("SKIP_DELAY", "false").lower() == "true"
+    if not skip_delay:
+        delay_min = _random.randint(0, 120)  # 9:00~11:00 KST 사이 랜덤 포스팅
+        if delay_min > 0:
+            logger.info(f"랜덤 딜레이: {delay_min}분 대기 중...")
+            await asyncio.sleep(delay_min * 60)
 
     logger.info("=" * 50)
     logger.info(f"파이프라인 시작: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
@@ -234,7 +235,11 @@ def run_scheduled():
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="쿠팡 → 쓰레드 자동 포스팅 파이프라인")
     parser.add_argument("--schedule", action="store_true", help="스케줄 모드로 실행")
+    parser.add_argument("--no-delay", action="store_true", help="랜덤 딜레이 없이 즉시 실행 (테스트용)")
     args = parser.parse_args()
+
+    if args.no_delay:
+        os.environ["SKIP_DELAY"] = "true"
 
     if args.schedule:
         run_scheduled()
