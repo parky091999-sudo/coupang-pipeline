@@ -140,23 +140,15 @@ def _extract_product_names(texts: list[str], account: str) -> list[str]:
         "- 상품이 없거나 모르면 아무것도 출력하지 마세요"
     )
     try:
-        import httpx
-        resp = httpx.post(
-            "https://api.groq.com/openai/v1/chat/completions",
-            headers={
-                "Authorization":  f"Bearer {GROQ_API_KEY}",
-                "Content-Type":   "application/json",
-            },
-            json={
-                "model":       "llama-3.3-70b-versatile",
-                "messages":    [{"role": "user", "content": prompt}],
-                "max_tokens":  200,
-                "temperature": 0.1,
-            },
-            timeout=30,
+        from groq import Groq
+        client = Groq(api_key=GROQ_API_KEY)
+        resp = client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            messages=[{"role": "user", "content": prompt}],
+            max_tokens=200,
+            temperature=0.1,
         )
-        resp.raise_for_status()
-        content = resp.json()["choices"][0]["message"]["content"].strip()
+        content = resp.choices[0].message.content.strip()
         names = [
             line.strip() for line in content.splitlines()
             if line.strip() and len(line.strip()) > 2
