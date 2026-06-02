@@ -2,8 +2,8 @@ name: Daily Pipeline
 
 on:
   schedule:
-    - cron: '5 0 * * *'   # 매일 09:05 KST (= 00:05 UTC) — 정각 부하 회피
-  workflow_dispatch:        # GitHub UI에서 수동 실행 가능
+    - cron: '5 0 * * *'
+  workflow_dispatch:
     inputs:
       skip_delay:
         description: '랜덤 딜레이 건너뛰기 (테스트용)'
@@ -15,7 +15,7 @@ jobs:
   pipeline:
     runs-on: ubuntu-latest
     permissions:
-      contents: write       # 페이지 파일 커밋+푸시 권한
+      contents: write
 
     steps:
       - uses: actions/checkout@v4
@@ -26,8 +26,9 @@ jobs:
 
       - name: Install Python dependencies
         run: pip install -r requirements.txt
-        name: Install Playwright browsers
-          run: playwright install chromium --with-deps
+
+      - name: Install Playwright browsers
+        run: playwright install chromium --with-deps
 
       - name: Run pipeline
         env:
