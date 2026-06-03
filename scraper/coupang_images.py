@@ -29,6 +29,14 @@ _SKIP_PATTERNS = [
     "gift", "coupon", "event",
 ]
 
+# 중국어 CDN 도메인 — 중국어 텍스트 삽입된 이미지 출처
+_CHINESE_CDN_PATTERNS = [
+    "alicdn.com", "taobao.com", "tmall.com",
+    "jd.com", "jdcloud.com", "kaola.com",
+    "pinduoduo.com", "shopee.com",
+    "img.gg.com", "gooood.cn",
+]
+
 
 def fetch_product_images(product_url: str, max_images: int = 4) -> list[str]:
     """
@@ -170,15 +178,15 @@ def _upgrade_image_url(url: str) -> str:
 
 
 def _is_valid_image(url: str) -> bool:
-    """아이콘/배너/로고 등 불필요한 이미지 제외"""
+    """아이콘/배너/로고/중국 CDN 이미지 제외"""
     url_lower = url.lower()
-    # 너무 짧은 URL 제외
     if len(url) < 20:
         return False
-    # 스킵 패턴 포함된 URL 제외
     if any(p in url_lower for p in _SKIP_PATTERNS):
         return False
-    # 이미지 확장자 확인
+    if any(p in url_lower for p in _CHINESE_CDN_PATTERNS):
+        logger.info(f"  중국 CDN 이미지 제외: {url[:60]}")
+        return False
     if not re.search(r"\.(jpg|jpeg|png|webp)", url_lower):
         return False
     return True

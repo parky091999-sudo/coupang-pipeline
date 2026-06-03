@@ -6,6 +6,7 @@
 - ★ 수정: 쿠팡 상세페이지에서 이미지 3~4장 수집 → carousel 포스팅용
 """
 import random
+import re
 import os
 import sys
 import logging
@@ -57,6 +58,21 @@ _POST1_SYSTEM = """
 
 _CODE_LINE = "제품 정보는 프로필 링크에서 [{code}] 검색 👆"
 
+# 허용 범위: 한글, ASCII(영숫자·기호·공백), 이모지
+_FOREIGN_RE = re.compile(
+    r"["
+    r"一-鿿"   # 중국어 간체/번체
+    r"぀-ヿ"   # 일본어 히라가나/가타카나
+    r"฀-๿"   # 태국어
+    r"؀-ۿ"   # 아랍어
+    r"Ѐ-ӿ"   # 러시아어(키릴)
+    r"Ā-ɏ"   # 라틴 확장(베트남어 등)
+    r"]"
+)
+
+def _has_foreign_chars(text: str) -> bool:
+    return bool(_FOREIGN_RE.search(text))
+
 
 def _generate_post1_ai(product: dict, product_code: str) -> str | None:
     if not GROQ_API_KEY:
@@ -97,6 +113,22 @@ def _generate_post1_ai(product: dict, product_code: str) -> str | None:
         body_and_tags = resp.choices[0].message.content.strip().strip('"\'""''')
         if not body_and_tags:
             return None
+        # 외국어 문자 포함 시 재생성 1회
+        if _has_foreign_chars(body_and_tags):
+            logger.warning("외국어 감지 → 재생성 시도")
+            resp2 = client.chat.completions.create(
+                model="llama-3.3-70b-versatile",
+                messages=[
+                    {"role": "system", "content": _POST1_SYSTEM},
+                    {"role": "user", "content": user_msg + "\n\n반드시 한국어만 사용하세요. 영어·중국어·일본어·베트남어·태국어 등 외국어 절대 금지."},
+                ],
+                max_tokens=320,
+                temperature=0.7,
+            )
+            body_and_tags = resp2.choices[0].message.content.strip().strip('"\'""''')
+            if _has_foreign_chars(body_and_tags):
+                logger.warning("재생성에도 외국어 포함 → 폴백 사용")
+                return None
         return f"{body_and_tags}\n\n{_CODE_LINE.format(code=product_code)}"
     except Exception as e:
         logger.warning(f"AI 글1 생성 실패: {e}")
