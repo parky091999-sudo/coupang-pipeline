@@ -108,7 +108,8 @@ async def run():
     candidates = []
     for product in products:
         logger.info(f"콘텐츠 생성: {product.get('name', '')[:40]}")
-        content = generate_post(product)
+        # assign_code_now=False: 코드는 실제 포스팅 시점에 부여
+        content = generate_post(product, assign_code_now=False)
         if not content:
             continue
         candidates.append({
@@ -116,8 +117,8 @@ async def run():
             "post_text":     content["post_text_1"],
             "image_url":     content.get("image_url", ""),
             "detail_images": content.get("detail_images", []),
-            "product_code":  content.get("product_code", ""),
-            "status":        "pending",   # pending | approved | rejected
+            "product_code":  "",   # 포스팅 시점에 할당
+            "status":        "pending",
         })
 
     pending = {

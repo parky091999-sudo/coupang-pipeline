@@ -1,0 +1,57 @@
+name: Fix Post Code
+
+on:
+  workflow_dispatch:
+    inputs:
+      old_post_id:
+        description: '삭제할 Threads 게시글 ID (없으면 빈칸)'
+        required: false
+        default: ''
+      old_code:
+        description: '현재 잘못된 코드 (예: 8 또는 008)'
+        required: true
+      new_code:
+        description: '올바른 코드 (예: 5 또는 005)'
+        required: true
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Pull latest
+        run: git pull --rebase origin main
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run fix script
+        env:
+          THREADS_ACCESS_TOKEN: ${{ secrets.THREADS_ACCESS_TOKEN }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          COUPANG_ACCESS_KEY: ${{ secrets.COUPANG_ACCESS_KEY }}
+          COUPANG_SECRET_KEY: ${{ secrets.COUPANG_SECRET_KEY }}
+          OLD_POST_ID: ${{ github.event.inputs.old_post_id }}
+          OLD_CODE: ${{ github.event.inputs.old_code }}
+          NEW_CODE: ${{ github.event.inputs.new_code }}
+          SKIP_DELAY: 'true'
+        run: python scripts/fix_post_code.py
+
+      - name: Commit data + pages
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/product_registry.json data/feed_posts.json docs/index.html docs/feed.html || true
+          git diff --staged --quiet || git commit -m "fix: [${{ github.event.inputs.old_code }}] → [${{ github.event.inputs.new_code }}] 코드 수정"
+          git push

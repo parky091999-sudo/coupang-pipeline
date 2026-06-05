@@ -173,6 +173,17 @@ async def run():
     detail_imgs = candidate.get("detail_images", [])
     code        = candidate.get("product_code", "")
 
+    # preselect 때 코드 미할당인 경우 → 지금 할당
+    if not code:
+        from generator.registry import assign_code
+        code = assign_code(
+            product.get("product_url", ""),
+            product.get("name", ""),
+            product.get("image_url", ""),
+        ) or ""
+        if code and "프로필 링크에서" not in post_text:
+            post_text += f"\n\n제품 정보는 프로필 링크에서 [{code}] 검색 👆"
+
     logger.info(f"포스팅: {product.get('name', '')[:40]} [{code}]")
     try:
         result = post_thread_api(

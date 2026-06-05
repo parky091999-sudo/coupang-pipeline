@@ -181,41 +181,60 @@ def _collect_detail_images(product: dict) -> list[str]:
 
 # ── 메인 생성 함수 ─────────────────────────────────────────────────────────────
 
-def generate_post(product: dict) -> dict:
+def generate_post(product: dict, assign_code_now: bool = True) -> dict:
+    """
+    assign_code_now=True (기본): 포스팅 시점에 호출 — 코드 즉시 부여
+    assign_code_now=False:       preselect용 — 코드 없이 텍스트만 생성, 포스팅 시점에 코드 부여
+    """
     from generator.registry import assign_code
 
     name = product.get("name", "")
     product_url = product.get("product_url", "")
     image_url = product.get("image_url", "")
 
-    # 상품 코드 할당
-    product_code = assign_code(product_url, name, image_url)
-    if not product_code:
-        logger.info(f"  차단된 상품 스킵: {name[:40]}")
-        return {}
+    if assign_code_now:
+        product_code = assign_code(product_url, name, image_url)
+        if not product_code:
+            logger.info(f"  차단된 상품 스킵: {name[:40]}")
+            return {}
+    else:
+        # 코드 없이 생성 — 나중에 포스팅 시점에 assign_code() 호출
+        product_code = ""
 
     # ★ 쿠팡 상세 이미지 3~4장 수집 (carousel용)
     logger.info(f"  상세 이미지 수집 중: {name[:30]}")
     detail_images = _collect_detail_images(product)
     logger.info(f"  → {len(detail_images)}장 준비됨")
 
-    # 글1 생성
-    post_text_1 = _generate_post1_ai(product, product_code)
-    if post_text_1:
-        style = "ai"
+    # 글1 생성 (코드 있으면 코드 라인 포함, 없으면 나중에 추가)
+    if product_code:
+        post_text_1 = _generate_post1_ai(product, product_code)
+        if post_text_1:
+            style = "ai"
+        else:
+            post_text_1 = _post1_fallback(name, product_code)
+            style = "fallback"
     else:
-        post_text_1 = _post1_fallback(name, product_code)
-        style = "fallback"
+        # 코드 없이 본문만 생성 (_CODE_LINE 제외)
+        post_text_1 = _generate_post1_ai(product, "CODE")
+        if post_text_1:
+            # CODE 플레이스홀더 제거 (포스팅 시점에 실제 코드로 교체)
+            post_text_1 = re.sub(r'\n\n제품 정보는 프로필 링크에서 \[CODE\] 검색 👆', '', post_text_1)
+            style = "ai"
+        else:
+            body = _post1_fallback(name, "CODE")
+            post_text_1 = re.sub(r'\n\n제품 정보는 프로필 링크에서 \[CODE\] 검색 👆', '', body)
+            style = "fallback"
 
     if COUPANG_PARTNERS_ACTIVE:
         post_text_1 = f"[광고]\n{post_text_1}\n\n{_AD_DISCLOSURE}"
 
-    logger.info(f"생성 완료 [{style}][{product_code}]: {name[:30]}")
+    logger.info(f"생성 완료 [{style}]{('['+product_code+']') if product_code else '[코드미정]'}: {name[:30]}")
     return {
         "post_text_1": post_text_1,
         "post_text_2": "",
-        "image_url": image_url,           # 기존 호환용 (단일 이미지)
-        "detail_images": detail_images,   # ★ carousel용 3~4장
+        "image_url": image_url,
+        "detail_images": detail_images,
         "product": product,
         "style": style,
         "product_code": product_code,
