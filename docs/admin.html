@@ -171,6 +171,37 @@ body {
 .toast.show { opacity: 1; }
 .scan-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
 .scan-meta { font-size: 11px; color: #555; }
+/* ── 후보 카드 편집 영역 ── */
+.card-text-edit {
+  width: 100%; min-height: 120px; max-height: 260px;
+  font-size: 13px; color: #bbb; line-height: 1.6;
+  background: #0d0d0d; padding: 10px 12px; border-radius: 8px;
+  border: 1px solid #2a2a2a; margin-bottom: 10px;
+  resize: vertical; font-family: inherit; white-space: pre-wrap;
+}
+.card-text-edit:focus { border-color: #f8c93a55; outline: none; }
+.card-text-edit:disabled { opacity: .45; cursor: not-allowed; }
+.product-link {
+  font-size: 11px; color: #f8c93a88; text-decoration: none;
+  display: inline-block; margin-top: 4px;
+}
+.product-link:hover { color: #f8c93a; text-decoration: underline; }
+.rejection-reason {
+  font-size: 11px; color: #e74c3c; padding: 6px 10px;
+  background: #2a1a1a; border-radius: 6px; margin-bottom: 8px;
+}
+/* ── 반려 모달 ── */
+#reject-modal {
+  display: none; position: fixed; inset: 0; background: rgba(0,0,0,.85);
+  z-index: 100; align-items: center; justify-content: center;
+}
+#reject-modal.show { display: flex; }
+#reject-modal textarea {
+  width: 100%; height: 80px; background: #111; border: 1px solid #333;
+  border-radius: 8px; color: #fff; font-size: 13px; padding: 10px;
+  resize: none; font-family: inherit; margin-bottom: 12px;
+}
+#reject-modal textarea:focus { border-color: #f8c93a44; outline: none; }
 </style>
 </head>
 <body>
@@ -238,6 +269,23 @@ body {
       <button class="btn btn-outline btn-sm"               id="filter-manual" onclick="filterHistory('manual',this)">수동</button>
     </div>
     <div id="history-list"><div class="loading">불러오는 중...</div></div>
+  </div>
+</div>
+
+<!-- 반려 사유 모달 -->
+<div id="reject-modal">
+  <div class="modal-box">
+    <h2 style="margin-bottom:8px">반려 사유 입력</h2>
+    <p style="font-size:12px;color:#666;margin-bottom:12px;line-height:1.6">
+      사유에 따라 자동 처리됩니다<br>
+      • <b style="color:#aaa">외국어·품질·어색·다시·수정</b> → 새 후보 자동 선정 요청<br>
+      • <b style="color:#aaa">제외·불필요·이 상품</b> → 해당 상품 제외
+    </p>
+    <textarea id="reject-reason-input" placeholder="예: 외국어가 섞여있음 / 상품이 관련없음 / 이미지에 중국어 있음"></textarea>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-danger" style="flex:1" onclick="submitReject()">반려 확정</button>
+      <button class="btn btn-outline" style="flex:1" onclick="closeRejectModal()">취소</button>
+    </div>
   </div>
 </div>
 
@@ -359,20 +407,27 @@ async function loadAutoCandidates() {
 }
 
 function renderCandidateCard(c, idx, isDefault) {
-  const { product = {}, post_text = "", image_url = "", product_code = "", status } = c;
-  const name     = product.name || "(이름 없음)";
-  const img      = image_url || product.image_url || "";
-  const price    = product.price || "";
-  const srcAcc   = product.youtube_source ? `유튜브 연동` : (product.source === "preset" ? "프리셋" : "자동수집");
+  const { product = {}, post_text = "", image_url = "", product_code = "", status, rejection_reason = "" } = c;
+  const name       = product.name || "(이름 없음)";
+  const img        = image_url || product.image_url || "";
+  const price      = product.price || "";
+  const productUrl = product.product_url || "";
+  const srcAcc     = product.youtube_source ? `유튜브 연동` : (product.source === "preset" ? "프리셋" : "자동수집");
+  const isEdited   = c.edited ? " ✏" : "";
 
   let badgeClass = "badge-pending", badgeText = "대기";
   let cardClass  = "";
-  if (status === "approved") { badgeClass = "badge-approved"; badgeText = "✓ 승인"; cardClass = "approved"; }
-  else if (status === "rejected") { badgeClass = "badge-rejected"; badgeText = "✕ 반려"; cardClass = "rejected"; }
+  if (status === "approved")  { badgeClass = "badge-approved"; badgeText = "✓ 승인" + isEdited; cardClass = "approved"; }
+  else if (status === "rejected" || status === "excluded") {
+    badgeClass = "badge-rejected";
+    badgeText  = status === "excluded" ? "✕ 제외" : "✕ 반려";
+    cardClass  = "rejected";
+  }
   else if (isDefault) { badgeClass = "badge-default"; badgeText = "→ 포스팅 예정"; cardClass = "default-pick"; }
 
   const approveDisabled = status === "approved" ? "disabled" : "";
-  const rejectDisabled  = status === "rejected"  ? "disabled" : "";
+  const rejectDisabled  = (status === "rejected" || status === "excluded") ? "disabled" : "";
+  const isRejected      = (status === "rejected" || status === "excluded");
 
   return `
   <div class="candidate-card ${cardClass}" id="cand-${idx}">
@@ -382,32 +437,100 @@ function renderCandidateCard(c, idx, isDefault) {
         <span class="card-badge ${badgeClass}">${badgeText}</span>
         <div class="card-name">${esc(name)}</div>
         <div class="card-meta">${price ? price + " · " : ""}${srcAcc}${product_code ? " · [" + product_code + "]" : ""}</div>
+        ${productUrl ? `<a href="${productUrl}" target="_blank" class="product-link">🔗 상품 확인 →</a>` : ""}
       </div>
     </div>
     <div class="card-body">
-      <div class="card-text">${esc(post_text)}</div>
+      ${rejection_reason ? `<div class="rejection-reason">반려 사유: ${esc(rejection_reason)}</div>` : ""}
+      <textarea class="card-text-edit" id="text-${idx}" ${isRejected ? "disabled" : ""}>${esc(post_text)}</textarea>
+      <div style="font-size:11px;color:#444;margin-bottom:8px">✏ 본문 직접 수정 후 승인 가능 · 승인 시 AI가 자동으로 다듬습니다</div>
       <div class="card-actions">
         <button class="btn btn-gold btn-sm" onclick="approveCandidate(${idx})" ${approveDisabled}>✓ 승인</button>
-        <button class="btn btn-danger btn-sm" onclick="rejectCandidate(${idx})" ${rejectDisabled}>✕ 반려</button>
+        <button class="btn btn-danger btn-sm" onclick="openRejectModal(${idx})" ${rejectDisabled}>✕ 반려</button>
         <button class="btn btn-outline btn-sm" onclick="resetCandidate(${idx})">↺ 초기화</button>
       </div>
     </div>
   </div>`;
 }
 
-async function _updatePendingStatus(idx, newStatus) {
+async function approveCandidate(idx) {
   try {
     const pending = _data["data/pending_post.json"];
     if (!pending?.candidates?.[idx]) return;
-    pending.candidates[idx].status = newStatus;
-    await ghPut("data/pending_post.json", pending, `admin: 후보 ${idx} → ${newStatus}`);
+    const textarea = document.getElementById(`text-${idx}`);
+    const edited   = textarea?.value ?? "";
+    const original = pending.candidates[idx].post_text || "";
+    pending.candidates[idx].status    = "approved";
+    pending.candidates[idx].post_text = edited;
+    pending.candidates[idx].edited    = edited !== original;
+    await ghPut("data/pending_post.json", pending, `admin: 후보 ${idx} 승인`);
     await loadAutoCandidates();
-    showToast(newStatus === "approved" ? "✓ 승인했습니다" : newStatus === "rejected" ? "✕ 반려했습니다" : "↺ 초기화했습니다");
+    showToast("✓ 승인했습니다" + (pending.candidates[idx].edited ? " (수정본 포스팅 전 AI 다듬기 예약)" : ""));
   } catch (e) { showToast("오류: " + e.message); }
 }
-const approveCandidate = i => _updatePendingStatus(i, "approved");
-const rejectCandidate  = i => _updatePendingStatus(i, "rejected");
-const resetCandidate   = i => _updatePendingStatus(i, "pending");
+
+const resetCandidate = async (idx) => {
+  try {
+    const pending = _data["data/pending_post.json"];
+    if (!pending?.candidates?.[idx]) return;
+    pending.candidates[idx].status = "pending";
+    delete pending.candidates[idx].edited;
+    delete pending.candidates[idx].rejection_reason;
+    await ghPut("data/pending_post.json", pending, `admin: 후보 ${idx} 초기화`);
+    await loadAutoCandidates();
+    showToast("↺ 초기화했습니다");
+  } catch (e) { showToast("오류: " + e.message); }
+};
+
+// ── 반려 모달 ──────────────────────────────────────────────────────────────────
+let _rejectIdx = -1;
+
+function openRejectModal(idx) {
+  _rejectIdx = idx;
+  document.getElementById("reject-reason-input").value = "";
+  document.getElementById("reject-modal").classList.add("show");
+  setTimeout(() => document.getElementById("reject-reason-input").focus(), 100);
+}
+
+function closeRejectModal() {
+  document.getElementById("reject-modal").classList.remove("show");
+  _rejectIdx = -1;
+}
+
+async function submitReject() {
+  const reason = document.getElementById("reject-reason-input").value.trim();
+  const idx    = _rejectIdx;
+  if (idx < 0) return;
+  closeRejectModal();
+
+  const REWRITE_KW = ["외국어","중국어","일본어","품질","어색","이상","다시","수정","베트남"];
+  const EXCLUDE_KW = ["제외","불필요","관련없","이 상품","이상품","삭제"];
+
+  const shouldExclude = EXCLUDE_KW.some(kw => reason.includes(kw));
+  const shouldRewrite = !shouldExclude && REWRITE_KW.some(kw => reason.includes(kw));
+  const newStatus     = shouldExclude ? "excluded" : "rejected";
+
+  try {
+    const pending = _data["data/pending_post.json"];
+    if (!pending?.candidates?.[idx]) return;
+    pending.candidates[idx].status           = newStatus;
+    pending.candidates[idx].rejection_reason = reason || "(사유 없음)";
+    await ghPut("data/pending_post.json", pending, `admin: 후보 ${idx} ${newStatus} — ${(reason||"").slice(0,30)}`);
+
+    if (shouldRewrite) {
+      try {
+        await ghDispatch("daily_preselect.yml");
+        showToast("✕ 반려 · 새 후보 자동 선정 중 (5분 소요)");
+      } catch (_) {
+        showToast("✕ 반려됐습니다 (새 후보 수동 선정 필요)");
+      }
+    } else {
+      showToast(shouldExclude ? "✕ 상품 제외됐습니다" : "✕ 반려됐습니다");
+    }
+
+    await loadAutoCandidates();
+  } catch (e) { showToast("오류: " + e.message); }
+}
 
 // ── 탭2: 수동 큐 ─────────────────────────────────────────────────────────────
 async function loadManualQueue() {

@@ -222,6 +222,44 @@ def generate_post(product: dict) -> dict:
     }
 
 
+def polish_post(text: str, product: dict) -> str | None:
+    """사용자가 편집한 포스팅 텍스트를 AI로 다듬기 (auto_post.py에서 호출)"""
+    if not GROQ_API_KEY or not text:
+        return None
+    name = product.get("name", "")
+    prompt = (
+        f"아래는 쿠팡 상품 추천 SNS 포스팅 초안입니다.\n\n"
+        f"상품명: {name}\n\n"
+        f"초안:\n{text}\n\n"
+        "위 초안을 바탕으로 자연스러운 한국어 SNS 포스팅으로 다듬어 주세요.\n"
+        "규칙:\n"
+        "- 초안의 구조·내용·방향을 최대한 유지\n"
+        "- 외국어(영어 제외) 단어가 있으면 한국어로 교체\n"
+        "- 어색한 표현만 자연스럽게 수정\n"
+        "- 이모지·해시태그·코드 라인 그대로 유지\n"
+        "- 다듬은 텍스트만 출력, 설명 금지"
+    )
+    try:
+        import httpx, urllib3
+        urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+        from groq import Groq
+        client = Groq(api_key=GROQ_API_KEY, http_client=httpx.Client(verify=False))
+        resp = client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            messages=[{"role": "user", "content": prompt}],
+            max_tokens=450,
+            temperature=0.4,
+        )
+        result = resp.choices[0].message.content.strip()
+        if _has_foreign_chars(result):
+            logger.warning("polish_post: 외국어 여전히 포함 → 원본 사용")
+            return None
+        return result
+    except Exception as e:
+        logger.warning(f"polish_post 실패: {e}")
+        return None
+
+
 def generate_posts_batch(products: list[dict]) -> list[dict]:
     results = []
     for product in products:

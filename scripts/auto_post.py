@@ -148,7 +148,21 @@ async def run():
         logger.warning("포스팅할 상품 없음 — 종료")
         return
 
-    # 3. 포스팅
+    # 3. 편집된 텍스트면 포스팅 전 AI 다듬기
+    if candidate.get("edited") and candidate.get("post_text"):
+        logger.info("편집된 텍스트 감지 → AI 다듬기 실행...")
+        try:
+            from generator.content import polish_post
+            polished = polish_post(candidate["post_text"], candidate.get("product", {}))
+            if polished:
+                candidate["post_text"] = polished
+                logger.info("  다듬기 완료")
+            else:
+                logger.info("  다듬기 실패 → 편집본 그대로 사용")
+        except Exception as e:
+            logger.warning(f"  다듬기 오류: {e}")
+
+    # 4. 포스팅
     from poster.threads import post_thread_api
     from poster.comment_replier import add_recent_post, check_and_reply_comments
     from poster.engager import run_engagement_session
