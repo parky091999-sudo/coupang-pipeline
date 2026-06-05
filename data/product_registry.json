@@ -1,5 +1,5 @@
 {
-  "next_code": 8,
+  "next_code": 9,
   "blocked_item_ids": [],
   "products": {
     "https://link.coupang.com/re/PCSNAVERPCSDP?pageKey=8849967732&ctag=8849967732&lpt": {
@@ -43,6 +43,12 @@
       "name": "자동 아로마 디퓨저 무드등 겸용 블랙골드 아로마 + 3병",
       "url": "https://link.coupang.com/re/PCSNAVERPCSDP?pageKey=9131851256&ctag=9131851256&lptag=I26870958522&itemId=26870958522&vendorItemId=93840547649&spec=10305199",
       "image_url": "https://shopping-phinf.pstatic.net/main_5980046/59800461502.jpg"
+    },
+    "https://smartstore.naver.com/main/products/11868845859": {
+      "code": "008",
+      "name": "오닉스 북스 GO7 (페이지후속) 7인치 흑백 이북리더기",
+      "url": "https://smartstore.naver.com/main/products/11868845859",
+      "image_url": "https://shopping-phinf.pstatic.net/main_8941335/89413356453.1.jpg"
     }
   }
 }
