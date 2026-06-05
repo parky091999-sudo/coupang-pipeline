@@ -292,11 +292,11 @@ def build_html(products: list[dict]) -> str:
   }}
   .grid.list-view .card {{
     flex-direction: row;
-    height: 100px;
+    height: 120px;
   }}
   .grid.list-view .card img {{
-    width: 100px;
-    height: 100px;
+    width: 120px;
+    height: 120px;
     aspect-ratio: 1 / 1;
     flex-shrink: 0;
     border-radius: var(--radius) 0 0 var(--radius);
@@ -306,11 +306,11 @@ def build_html(products: list[dict]) -> str:
     justify-content: center;
     gap: 6px;
   }}
-  .grid.list-view .badge-row {{ margin-bottom: 4px; }}
+  .grid.list-view .badge-row {{ margin-bottom: 0; }}
   .grid.list-view .name {{
     -webkit-line-clamp: 2;
-    margin-bottom: 6px;
-    font-size: 0.82rem;
+    margin-bottom: 0;
+    font-size: 0.84rem;
   }}
   .grid.list-view .btn {{
     padding: 6px 10px;
