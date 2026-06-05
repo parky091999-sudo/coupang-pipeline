@@ -71,11 +71,14 @@ async def _collect_products(need: int, posted_ids: set[str]) -> list[dict]:
 
     if len(products) < need:
         logger.info("쿠팡 홈 폴백...")
-        from scraper.coupang import scrape_homepage_deals
-        extra = await scrape_homepage_deals(max_items=need - len(products))
-        for p in extra:
-            if _product_key(p) not in posted_ids and p not in products:
-                products.append(p)
+        try:
+            from scraper.coupang import scrape_homepage_deals
+            extra = await scrape_homepage_deals(max_items=need - len(products))
+            for p in extra:
+                if _product_key(p) not in posted_ids and p not in products:
+                    products.append(p)
+        except Exception as e:
+            logger.warning(f"쿠팡 홈 스크래퍼 실패 (Playwright 미설치 등): {e}")
 
     if len(products) < need:
         logger.info("프리셋 리스트 폴백...")

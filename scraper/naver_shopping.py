@@ -141,7 +141,9 @@ def _fetch_items(keyword: str, display: int = 30) -> list[dict]:
         "X-Naver-Client-Secret": NAVER_CLIENT_SECRET,
     }
     params = {"query": keyword, "display": display, "sort": "sim"}
-    resp = requests.get(API_URL, headers=headers, params=params, timeout=10)
+    import urllib3
+    urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+    resp = requests.get(API_URL, headers=headers, params=params, timeout=10, verify=False)
     resp.raise_for_status()
     return resp.json().get("items", [])
 
@@ -236,8 +238,10 @@ def _check_coupang_rating(product: dict) -> bool:
         return False
 
     try:
+        import urllib3
+        urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
         resp = requests.head(url, allow_redirects=True, timeout=8,
-                             headers={"User-Agent": "Mozilla/5.0"})
+                             headers={"User-Agent": "Mozilla/5.0"}, verify=False)
         final_url = resp.url
         if "coupang.com" not in final_url:
             logger.info(f"  쿠팡 상품 아님 — 차단: {url[:50]}")

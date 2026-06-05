@@ -78,8 +78,10 @@ def _generate_post1_ai(product: dict, product_code: str) -> str | None:
     if not GROQ_API_KEY:
         return None
     try:
+        import httpx, urllib3
+        urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
         from groq import Groq
-        client = Groq(api_key=GROQ_API_KEY)
+        client = Groq(api_key=GROQ_API_KEY, http_client=httpx.Client(verify=False))
 
         name = product.get("name", "")
         category_hint = product.get("category_hint", "")
