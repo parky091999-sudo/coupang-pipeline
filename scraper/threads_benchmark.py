@@ -179,7 +179,7 @@ def _search_naver(query: str) -> dict | None:
         "X-Naver-Client-Id":     NAVER_CLIENT_ID,
         "X-Naver-Client-Secret": NAVER_CLIENT_SECRET,
     }
-    params = {"query": query, "display": 5, "sort": "sim"}
+    params = {"query": query, "display": 10, "sort": "sim"}
     try:
         resp = requests.get(
             "https://openapi.naver.com/v1/search/shop.json",
@@ -189,7 +189,16 @@ def _search_naver(query: str) -> dict | None:
         items = resp.json().get("items", [])
         if not items:
             return None
-        item = items[0]
+        # 쿠팡 링크 우선 탐색 (mall 이름 또는 link URL 기준)
+        item = None
+        for it in items:
+            link = it.get("link", "")
+            mall = it.get("mallName", "")
+            if "coupang.com" in link or "쿠팡" in mall:
+                item = it
+                break
+        if item is None:
+            return None  # 쿠팡 상품 없음
         name = re.sub(r"<[^>]+>", "", item.get("title", query)).strip()
         lp   = int(item.get("lprice", 0) or 0)
         return {
