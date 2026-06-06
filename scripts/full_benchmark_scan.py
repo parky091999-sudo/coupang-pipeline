@@ -97,6 +97,9 @@ def run():
                     continue
 
                 url = product.get("product_url", "")
+                if not url or "coupang.com" not in url:
+                    logger.info(f"  비쿠팡 URL 제외: {product.get('name','')[:30]}")
+                    continue
                 if url in seen_urls:
                     continue
                 seen_urls.add(url)

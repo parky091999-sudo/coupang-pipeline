@@ -73,7 +73,16 @@ def _get(url, timeout=15):
 
 
 def _product_id(url: str) -> str | None:
+    # coupang.com/vp/products/XXXXXX
     m = re.search(r"/products/(\d+)", url)
+    if m:
+        return m.group(1)
+    # link.coupang.com 파트너 링크: itemId=XXXXXX
+    m = re.search(r"[?&]itemId=(\d+)", url)
+    if m:
+        return m.group(1)
+    # itemId 없으면 pageKey를 고유 ID로 사용
+    m = re.search(r"[?&]pageKey=(\d+)", url)
     return m.group(1) if m else None
 
 
@@ -92,8 +101,14 @@ def _is_coupang_url(url: str) -> bool:
 
 def _follow_to_coupang(url: str) -> str | None:
     """어떤 링크든 최종 쿠팡 상품 URL로 추적"""
+    # 이미 coupang.com 직접 URL인 경우
     if re.search(r"coupang\.com/vp/products/\d+", url):
         return re.search(r"(https?://(?:www\.)?coupang\.com/vp/products/\d+)", url).group(1)
+    # 쿠팡 파트너스 링크 — GitHub Actions에서 coupang.com 직접 접근 차단됨
+    # link.coupang.com URL을 그대로 반환 (pageKey/itemId로 추후 정보 조회)
+    if "link.coupang.com" in url:
+        return url
+    # 기타 URL은 리다이렉트 추적 시도
     resp = _get(url, timeout=10)
     if not resp:
         return None
@@ -101,6 +116,10 @@ def _follow_to_coupang(url: str) -> str | None:
         m = re.search(r"(https?://(?:www\.)?coupang\.com/vp/products/\d+)", src)
         if m:
             return m.group(1)
+    # 리다이렉트 결과가 link.coupang.com인 경우도 수락
+    m = re.search(r"(https?://link\.coupang\.com/[^\s\"'<>&]+)", resp.url)
+    if m:
+        return m.group(1)
     return None
 
 
@@ -153,6 +172,45 @@ def _fetch_coupang_product(product_url: str) -> dict | None:
     if m2:
         img = m2.group(1)
     return {"name": name, "image_url": img, "product_url": product_url}
+
+
+def _fetch_partner_link_product(partner_url: str) -> dict | None:
+    """link.coupang.com 파트너 링크 → pageKey로 네이버 쇼핑 카탈로그에서 상품 정보 조회
+    (GitHub Actions에서 coupang.com 직접 접근 차단 우회)
+    """
+    m = re.search(r"[?&]pageKey=(\d+)", partner_url)
+    if not m:
+        logger.warning(f"  pageKey 없음: {partner_url[:60]}")
+        return None
+    page_key = m.group(1)
+
+    catalog_url = f"https://search.shopping.naver.com/catalog/{page_key}"
+    resp = _get(catalog_url, timeout=12)
+    if not resp or resp.status_code != 200:
+        logger.warning(f"  네이버 카탈로그 접근 실패 (pageKey={page_key})")
+        return None
+
+    html = resp.text
+    name = ""
+    # og:title 우선
+    mt = re.search(r'<meta[^>]+property=["\']og:title["\'][^>]+content=["\'](.*?)["\']', html)
+    if mt:
+        name = mt.group(1).strip()
+    if not name:
+        mt = re.search(r'<title[^>]*>([^<]+)</title>', html, re.I)
+        if mt:
+            name = mt.group(1).split('|')[0].split('-')[0].strip()
+    if not name:
+        logger.warning(f"  상품명 추출 실패 (pageKey={page_key})")
+        return None
+
+    img = ""
+    mi = re.search(r'<meta[^>]+property=["\']og:image["\'][^>]+content=["\'](https?://[^"\']+)', html)
+    if mi:
+        img = mi.group(1)
+
+    logger.info(f"  네이버 카탈로그 조회 성공: {name[:40]}")
+    return {"name": name, "image_url": img, "product_url": partner_url}
 
 
 # ── Playwright 기반 inpock 스크래퍼 ──────────────────────────────────────────
@@ -264,7 +322,7 @@ async def _scrape_collection(page_url: str, source_label: str) -> list[dict]:
             continue
         seen_pids.add(pid)
 
-        product_info = _fetch_coupang_product(coupang_url)
+        product_info = _fetch_product_info(coupang_url)
         if not product_info:
             continue
 
@@ -291,11 +349,18 @@ async def _scrape_collection(page_url: str, source_label: str) -> list[dict]:
 
 # ── 개별 상품 URL 처리 ────────────────────────────────────────────────────────
 
+def _fetch_product_info(coupang_url: str) -> dict | None:
+    """파트너 링크 / 직접 URL에 따라 적합한 방법으로 상품 정보 조회"""
+    if "link.coupang.com" in coupang_url:
+        return _fetch_partner_link_product(coupang_url)
+    return _fetch_coupang_product(coupang_url)
+
+
 def _process_single_url(url: str) -> dict | None:
     coupang_url = _follow_to_coupang(url)
     if not coupang_url:
         return None
-    product_info = _fetch_coupang_product(coupang_url)
+    product_info = _fetch_product_info(coupang_url)
     if not product_info:
         return None
     extra = _naver_enrich(product_info["name"])
