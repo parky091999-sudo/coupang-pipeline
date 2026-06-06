@@ -1,13 +1,13 @@
 {
-  "scanned_at": "2026-06-05T20:01:53.706099+09:00",
+  "scanned_at": "2026-06-06T13:58:00.092081+09:00",
   "candidates": [
     {
       "product": {
-        "name": "액막이 도어벨 명태풍경 체리원목 자석 현관종 집들이 이사 선물 마켓유니버스",
-        "price": "15,900원",
-        "image_url": "https://shopping-phinf.pstatic.net/main_8584369/85843693433.12.jpg",
-        "product_url": "https://smartstore.naver.com/main/products/8299193110",
-        "brand": "마켓유니버스",
+        "name": "보버 대용량 실내 방향제 디퓨져 딥포레스트, 200ml, 1개",
+        "price": "21,900원",
+        "image_url": "https://shopping-phinf.pstatic.net/main_5852354/58523545722.20260115123213.jpg",
+        "product_url": "https://search.shopping.naver.com/catalog/58523545722",
+        "brand": "보버",
         "source": "benchmark"
       },
       "source_account": "interior_dict",
@@ -63,10 +63,10 @@
     },
     {
       "product": {
-        "name": "삼성전자 삼성 2025 QLED 4K QF7D 214cm(85인치) (KQ85QF7DAFXKR), 스탠드",
-        "price": "1,897,060원",
-        "image_url": "https://shopping-phinf.pstatic.net/main_5616521/56165212067.20250808111943.jpg",
-        "product_url": "https://search.shopping.naver.com/catalog/56165212067",
+        "name": "삼성전자 삼성 2025 QLED 4K QF7D 189cm(75인치) (KQ75QF7DAFXKR), 스탠드",
+        "price": "1,621,690원",
+        "image_url": "https://shopping-phinf.pstatic.net/main_5616513/56165132243.20250808111211.jpg",
+        "product_url": "https://search.shopping.naver.com/catalog/56165132243",
         "brand": "삼성",
         "source": "benchmark"
       },
@@ -83,6 +83,18 @@
         "source": "benchmark"
       },
       "source_account": "kimsobak90",
+      "selected": false
+    },
+    {
+      "product": {
+        "name": "선인장 싱크대 거름망 채반 필터 틱톡 꿀템 신박템",
+        "price": "12,000원",
+        "image_url": "https://shopping-phinf.pstatic.net/main_8815873/88158733267.jpg",
+        "product_url": "https://smartstore.naver.com/main/products/10614227618",
+        "brand": "",
+        "source": "benchmark"
+      },
+      "source_account": "hehe_home_tem",
       "selected": false
     }
   ]
