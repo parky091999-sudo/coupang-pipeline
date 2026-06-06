@@ -262,10 +262,11 @@ async def _scrape_with_playwright(page_url: str) -> list[str]:
         )
         page = await context.new_page()
 
-        # 네트워크 응답 캡처
+        # 네트워크 응답 캡처 (JSON 응답 및 알려진 도메인 모두 수집)
         async def on_response(response):
-            url = response.url
-            if any(kw in url for kw in ["coupang", "inpock", "api"]):
+            r_url = response.url
+            ct = response.headers.get("content-type", "")
+            if any(kw in r_url for kw in ["coupang", "inpock", "api"]) or "json" in ct:
                 try:
                     body = await response.text()
                     collected_texts.append(body)
@@ -281,9 +282,16 @@ async def _scrape_with_playwright(page_url: str) -> list[str]:
             await page.wait_for_timeout(2000)
             await page.evaluate("window.scrollTo(0, document.body.scrollHeight)")
             await page.wait_for_timeout(1000)
-            # 최종 HTML도 추가
+            # 최종 HTML 추가
             html = await page.content()
             collected_texts.append(html)
+            # DOM에서 직접 href 추출 (SPA 렌더링 후 실제 링크 수집)
+            hrefs = await page.evaluate("""
+                () => Array.from(document.querySelectorAll('a[href]'))
+                     .map(a => a.href)
+                     .filter(h => h.includes('coupang') || h.includes('inpock'))
+            """)
+            collected_texts.extend(hrefs)
         except Exception as e:
             logger.warning(f"  Playwright 페이지 로드 실패: {e}")
         finally:
