@@ -106,9 +106,21 @@ def _follow_to_coupang(url: str) -> str | None:
     # 이미 coupang.com 직접 URL인 경우
     if re.search(r"coupang\.com/vp/products/\d+", url):
         return re.search(r"(https?://(?:www\.)?coupang\.com/vp/products/\d+)", url).group(1)
-    # 쿠팡 파트너스 링크 — GitHub Actions에서 coupang.com 직접 접근 차단됨
+    # 쿠팡 파트너스 링크 — pageKey 있으면 즉시 반환, 없으면 단축 URL 추적
     if "link.coupang.com" in url:
-        return url
+        if re.search(r"[?&]pageKey=", url):
+            return url  # 이미 pageKey 있음
+        # 단축 URL(link.coupang.com/a/XXX 등) → HEAD로 pageKey 있는 URL 획득
+        try:
+            r = requests.head(url, headers=_HEADERS, timeout=8, verify=False, allow_redirects=False)
+            location = r.headers.get("Location", "")
+            if "link.coupang.com" in location:
+                return location  # pageKey 포함 URL 획득
+            if re.search(r"coupang\.com/vp/products/\d+", location):
+                return re.search(r"(https?://(?:www\.)?coupang\.com/vp/products/\d+)", location).group(1)
+        except Exception:
+            pass
+        return url  # 폴백: 원래 단축 URL
 
     # inpock 및 기타 리다이렉트: HEAD 요청으로 중간 Location 헤더 추출
     # (coupang.com 직접 접근 없이 link.coupang.com까지만 추적)
