@@ -2,8 +2,10 @@ playwright
 anthropic
 groq
 google-generativeai
+google-genai
 schedule
 python-dotenv
 requests
 aiofiles
 beautifulsoup4
+Pillow
