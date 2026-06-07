@@ -1,8 +1,8 @@
 """
 AI 이미지 생성
-- Gemini로 프롬프트 생성 → pollinations.ai 다운로드 → imgBB 영구 업로드
-- imgBB 업로드 성공한 URL만 반환 (pollinations URL을 Threads에 직접 넘기지 않음)
-- 실패 시 [] 반환 → 호출부에서 원본 이미지 유지
+1순위: Together AI FLUX.1-schnell-Free (무료, CI 안정적) → imgBB 업로드
+2순위: pollinations.ai → imgBB 업로드 (브라우저 환경에서만 신뢰)
+실패 시 [] 반환 → 호출부에서 원본 이미지 유지
 """
 import base64
 import logging
@@ -17,11 +17,11 @@ ROOT = os.path.dirname(os.path.dirname(__file__))
 sys.path.insert(0, ROOT)
 from config import GOOGLE_API_KEY
 
-IMGBB_API_KEY = os.getenv("IMGBB_API_KEY", "")
+IMGBB_API_KEY   = os.getenv("IMGBB_API_KEY", "")
+TOGETHER_API_KEY = os.getenv("TOGETHER_API_KEY", "")
 
 logger = logging.getLogger("image_gen")
 
-# 카테고리별 영문 폴백 프롬프트 (Gemini 실패 시 사용, 영문만 사용해야 pollinations 정확도 높음)
 CATEGORY_PROMPTS = {
     "뷰티": [
         "Korean LED facial mask skincare device, soft pink pastel studio lighting, cosmetic product photography, clean white background, 4k",
@@ -93,31 +93,55 @@ Rules:
     return CATEGORY_PROMPTS.get(category, CATEGORY_PROMPTS["기타"])
 
 
-def _fetch_image(url: str, timeout: int = 60) -> bytes | None:
-    """pollinations.ai에서 이미지 바이트 다운로드 (1회 재시도)"""
-    for attempt in range(2):
-        try:
-            r = requests.get(url, timeout=timeout)
-            if r.status_code == 200 and len(r.content) > 5000:
-                ct = r.headers.get("content-type", "")
-                # content-type이 image거나, 바이트 시그니처로 이미지 확인
-                if ct.startswith("image") or r.content[:3] in (b'\xff\xd8\xff', b'\x89PN', b'GIF', b'RIFF'):
-                    return r.content
-                logger.warning(f"  비이미지 응답 (attempt {attempt+1}): ct={ct}, size={len(r.content)}")
-            elif r.status_code != 200:
-                logger.warning(f"  HTTP {r.status_code} (attempt {attempt+1})")
-        except requests.Timeout:
-            logger.warning(f"  타임아웃 {timeout}s (attempt {attempt+1})")
-        except Exception as e:
-            logger.warning(f"  다운로드 오류 (attempt {attempt+1}): {e}")
+def _together_generate(prompt: str) -> bytes | None:
+    """Together AI FLUX.1-schnell-Free로 이미지 생성 (무료)"""
+    try:
+        r = requests.post(
+            "https://api.together.xyz/v1/images/generations",
+            headers={
+                "Authorization": f"Bearer {TOGETHER_API_KEY}",
+                "Content-Type": "application/json",
+            },
+            json={
+                "model":           "black-forest-labs/FLUX.1-schnell-Free",
+                "prompt":          prompt,
+                "width":           1024,
+                "height":          1024,
+                "steps":           4,
+                "n":               1,
+                "response_format": "b64_json",
+            },
+            timeout=60,
+        )
+        if r.status_code == 200:
+            b64 = r.json()["data"][0]["b64_json"]
+            return base64.b64decode(b64)
+        logger.warning(f"  Together AI 오류: {r.status_code} {r.text[:120]}")
+    except Exception as e:
+        logger.warning(f"  Together AI 예외: {e}")
+    return None
 
-        if attempt == 0:
-            time.sleep(10)
+
+def _pollinations_generate(prompt: str, idx: int = 0) -> bytes | None:
+    """pollinations.ai 폴백 (로컬/브라우저 환경용, CI에서 불안정)"""
+    encoded = quote(prompt)
+    seed    = (abs(hash(prompt)) + idx * 7919) % 99999
+    url     = (
+        f"https://image.pollinations.ai/prompt/{encoded}"
+        f"?width=1024&height=1024&nologo=true&seed={seed}&model=flux-realism"
+    )
+    try:
+        r = requests.get(url, timeout=90)
+        if r.status_code == 200 and len(r.content) > 5000:
+            ct = r.headers.get("content-type", "")
+            if ct.startswith("image") or r.content[:3] in (b'\xff\xd8\xff', b'\x89PN', b'GIF'):
+                return r.content
+    except Exception as e:
+        logger.warning(f"  pollinations 실패: {e}")
     return None
 
 
 def _upload_imgbb(img_bytes: bytes) -> str | None:
-    """imgBB에 이미지 업로드 → URL 반환"""
     try:
         b64 = base64.b64encode(img_bytes).decode()
         r = requests.post(
@@ -135,8 +159,8 @@ def _upload_imgbb(img_bytes: bytes) -> str | None:
 
 def generate_and_upload_images(product: dict, post_text: str = "") -> list[str]:
     """
-    AI 이미지 생성 → imgBB 업로드 → 영구 URL 목록 반환.
-    IMGBB_API_KEY 없거나 전체 실패 시 [] 반환 (호출부가 원본 이미지 사용).
+    AI 이미지 4장 생성 → imgBB 업로드 → 영구 URL 목록 반환.
+    imgBB 키 없거나 전체 실패 시 [] 반환.
     """
     if not IMGBB_API_KEY:
         logger.info("IMGBB_API_KEY 없음 → AI 이미지 건너뜀")
@@ -146,17 +170,22 @@ def generate_and_upload_images(product: dict, post_text: str = "") -> list[str]:
     result  = []
 
     for i, prompt in enumerate(prompts[:4]):
-        encoded  = quote(prompt)
-        seed     = (abs(hash(prompt)) + i * 7919) % 99999
-        poll_url = (
-            f"https://image.pollinations.ai/prompt/{encoded}"
-            f"?width=1080&height=1080&nologo=true&seed={seed}&model=flux-realism"
-        )
         logger.info(f"  이미지 {i+1}/4 생성 중...")
 
-        img_bytes = _fetch_image(poll_url)
+        # 1순위: Together AI
+        img_bytes = None
+        if TOGETHER_API_KEY:
+            img_bytes = _together_generate(prompt)
+            if img_bytes:
+                logger.info(f"    Together AI 생성 성공 ({i+1})")
+
+        # 2순위: pollinations.ai
         if not img_bytes:
-            logger.warning(f"  이미지 {i+1} 다운로드 실패 — 건너뜀")
+            logger.info(f"    pollinations.ai 폴백 ({i+1})...")
+            img_bytes = _pollinations_generate(prompt, idx=i)
+
+        if not img_bytes:
+            logger.warning(f"  이미지 {i+1} 생성 실패 — 건너뜀")
             continue
 
         url = _upload_imgbb(img_bytes)
