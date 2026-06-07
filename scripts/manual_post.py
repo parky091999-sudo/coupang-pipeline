@@ -112,18 +112,6 @@ async def run():
 
     logger.info(f"포스팅: {product.get('name', '')[:40]} [{code}]")
 
-    # AI 이미지 생성 — imgBB 업로드 성공 시 교체, 실패 시 원본 유지
-    try:
-        from generator.image_gen import generate_and_upload_images
-        ai_imgs = generate_and_upload_images(product, post_text)
-        if ai_imgs:
-            detail_imgs = ai_imgs
-            logger.info(f"AI 이미지 {len(ai_imgs)}장으로 교체")
-        else:
-            logger.info("AI 이미지 생성 실패 → 원본 이미지 유지")
-    except Exception as e:
-        logger.warning(f"AI 이미지 생성 오류: {e}")
-
     from poster.threads import post_thread_api
     from poster.comment_replier import add_recent_post
 
