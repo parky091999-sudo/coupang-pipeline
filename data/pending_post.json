@@ -30,7 +30,8 @@
         "https://shopping-phinf.pstatic.net/main_5465817/54658171664.jpg"
       ],
       "product_code": "",
-      "status": "pending"
+      "status": "rejected",
+      "rejection_reason": "상품과 본문이 다름"
     }
   ]
 }
