@@ -53,4 +53,4 @@ jobs:
           git add data/product_registry.json data/feed_posts.json data/posted_ids.json || true
           git add -u || true
           git diff --staged --quiet || git commit -m "auto: daily pipeline $(date -u +%Y-%m-%d)"
-          git pull --rebase origin main && git push
+          git pull --rebase -X ours origin main && git push

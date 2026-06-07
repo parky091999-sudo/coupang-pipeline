@@ -424,6 +424,32 @@ _CASUAL_FALLBACKS = [
 def generate_general_post(post_type: str | None = None) -> str | None:
     """일상/일반 포스트 생성 (상품 없음)"""
     chosen_type = post_type or random.choice(_CASUAL_POST_TYPES)
+    user_msg = (
+        f"글 유형: {chosen_type}\n\n"
+        "위 유형에 맞는 Threads 일상 게시글을 써줘. "
+        "진짜 사람이 쓴 것처럼 자연스럽고 재치 있게."
+    )
+
+    if GOOGLE_API_KEY:
+        try:
+            import google.generativeai as genai
+            genai.configure(api_key=GOOGLE_API_KEY)
+            model = genai.GenerativeModel(
+                "gemini-2.0-flash",
+                system_instruction=_CASUAL_SYSTEM,
+                generation_config=genai.types.GenerationConfig(
+                    max_output_tokens=300,
+                    temperature=0.95,
+                ),
+            )
+            resp = model.generate_content(user_msg)
+            text = resp.text.strip().strip("\"'""''") if resp.text else ""
+            if text and not _has_foreign_chars(text):
+                logger.info("  [Gemini 2.0 Flash] 일상글 생성 완료")
+                return _fix_linebreaks(text)
+            logger.warning("Gemini 일상글 외국어 포함 또는 빈 응답 → Groq 폴백")
+        except Exception as e:
+            logger.warning(f"Gemini 일상글 생성 실패: {e}")
 
     if not GROQ_API_KEY:
         return random.choice(_CASUAL_FALLBACKS)
@@ -433,12 +459,6 @@ def generate_general_post(post_type: str | None = None) -> str | None:
         urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
         from groq import Groq
         client = Groq(api_key=GROQ_API_KEY, http_client=httpx.Client(verify=False))
-
-        user_msg = (
-            f"글 유형: {chosen_type}\n\n"
-            "위 유형에 맞는 Threads 일상 게시글을 써줘. "
-            "진짜 사람이 쓴 것처럼 자연스럽고 재치 있게."
-        )
         resp = client.chat.completions.create(
             model="llama-3.3-70b-versatile",
             messages=[
@@ -452,6 +472,7 @@ def generate_general_post(post_type: str | None = None) -> str | None:
         if not text or _has_foreign_chars(text):
             logger.warning("일상글 AI 생성 실패 또는 외국어 포함 → 폴백")
             return random.choice(_CASUAL_FALLBACKS)
+        logger.info("  [Groq 폴백] 일상글 생성 완료")
         return _fix_linebreaks(text)
     except Exception as e:
         logger.warning(f"일상글 생성 실패: {e}")
