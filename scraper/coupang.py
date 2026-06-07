@@ -30,7 +30,7 @@ async def scrape_homepage_deals(max_items: int = MAX_PRODUCTS_PER_RUN) -> list[d
 
     async with async_playwright() as p:
         browser = await p.chromium.launch(
-            headless=False,  # 쿠팡 봇탐지 우회 - 브라우저 창이 뜨지만 정상 동작
+            headless=True,
             args=["--no-sandbox", "--disable-blink-features=AutomationControlled"],
         )
         context = await browser.new_context(
