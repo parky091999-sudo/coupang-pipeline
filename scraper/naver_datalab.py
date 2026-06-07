@@ -34,7 +34,7 @@ def get_trending_categories(top_n: int = 3) -> list[str]:
         logger.warning("네이버 API 키 없음 — 데이터랩 스킵")
         return []
 
-    end_date   = datetime.now()
+    end_date   = datetime.now() - timedelta(days=1)  # 오늘 데이터는 미반영
     start_date = end_date - timedelta(weeks=4)
 
     body = {
