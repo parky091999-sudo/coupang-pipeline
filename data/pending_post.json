@@ -1,6 +1,6 @@
 {
   "for_date": "2026-06-09",
-  "generated_at": "2026-06-08T13:27:03.482374+09:00",
+  "generated_at": "2026-06-08T13:53:53.122918+09:00",
   "candidates": [
     {
       "product": {
@@ -16,15 +16,15 @@
         "category_hint": "주방",
         "mall_name": "쿠팡",
         "source": "naver_shopping",
-        "scraped_at": "2026-06-08T04:26:35.167636"
+        "scraped_at": "2026-06-08T04:53:18.973603"
       },
-      "post_text": "요리할 때마다 한 손으론 후추 갈고 한 손으",
+      "post_text": "요리하다가 한 손으로 소금 후추 갈고 싶어서 버벅거",
       "image_url": "https://shopping-phinf.pstatic.net/main_5733255/57332559712.8.jpg",
       "detail_images": [
         "https://shopping-phinf.pstatic.net/main_5733255/57332559712.8.jpg"
       ],
       "product_code": "",
-      "status": "excluded"
+      "status": "pending"
     },
     {
       "product": {
@@ -40,15 +40,15 @@
         "category_hint": "생활",
         "mall_name": "쿠팡",
         "source": "naver_shopping",
-        "scraped_at": "2026-06-08T04:26:43.139784"
+        "scraped_at": "2026-06-08T04:53:29.861408"
       },
-      "post_text": "청소 할 때마다 팔 떨어져 나갈 것 같은 사람 여기 한",
+      "post_text": "아니 진짜 청소하다가 현타 오고 대충 끝내는",
       "image_url": "https://shopping-phinf.pstatic.net/main_5915999/59159994257.10.jpg",
       "detail_images": [
         "https://shopping-phinf.pstatic.net/main_5915999/59159994257.10.jpg"
       ],
       "product_code": "",
-      "status": "excluded"
+      "status": "pending"
     }
   ]
 }
