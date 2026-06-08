@@ -24,7 +24,7 @@
         "https://shopping-phinf.pstatic.net/main_5733255/57332559712.8.jpg"
       ],
       "product_code": "",
-      "status": "pending"
+      "status": "excluded"
     },
     {
       "product": {
@@ -48,7 +48,7 @@
         "https://shopping-phinf.pstatic.net/main_5915999/59159994257.10.jpg"
       ],
       "product_code": "",
-      "status": "pending"
+      "status": "excluded"
     }
   ]
 }
