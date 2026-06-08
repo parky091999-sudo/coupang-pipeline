@@ -69,49 +69,86 @@ _SCRAPE_HEADERS = {
 }
 
 
+def _parse_coupang_html(html: str) -> dict:
+    """쿠팡 상품 HTML에서 이름·이미지·가격 파싱"""
+    # 상품명: og:title (속성 순서 두 가지) → <title>
+    name = ""
+    for pat in [
+        r'<meta[^>]+property=["\']og:title["\'][^>]+content=["\']([^"\']+)["\']',
+        r'<meta[^>]+content=["\']([^"\']+)["\'][^>]+property=["\']og:title["\']',
+    ]:
+        m = re.search(pat, html)
+        if m:
+            name = m.group(1).strip()
+            break
+    if not name:
+        m = re.search(r"<title>([^<]+)</title>", html)
+        if m:
+            name = m.group(1).split("|")[0].split("-")[0].strip()
+
+    # 이미지: og:image
+    image_url = ""
+    for pat in [
+        r'<meta[^>]+property=["\']og:image["\'][^>]+content=["\']([^"\']+)["\']',
+        r'<meta[^>]+content=["\']([^"\']+)["\'][^>]+property=["\']og:image["\']',
+    ]:
+        m = re.search(pat, html)
+        if m:
+            image_url = m.group(1).strip()
+            break
+
+    # 가격
+    price = ""
+    m = re.search(r'"price"\s*:\s*"?([\d]+)"?', html)
+    if m:
+        p = int(m.group(1))
+        if p > 100:
+            price = f"{p:,}원"
+
+    return {"name": name, "image_url": image_url, "price": price}
+
+
+def _fetch_coupang_info_playwright(url: str) -> dict:
+    """Playwright로 JS 렌더링 후 상품 정보 추출 (단축 URL 등 fallback)"""
+    try:
+        from playwright.sync_api import sync_playwright
+        with sync_playwright() as p:
+            browser = p.chromium.launch(headless=True, args=["--no-sandbox", "--disable-dev-shm-usage"])
+            page = browser.new_page(user_agent=_SCRAPE_HEADERS["User-Agent"])
+            page.goto(url, wait_until="domcontentloaded", timeout=20000)
+            page.wait_for_timeout(2000)
+            html = page.content()
+            final_url = page.url
+            browser.close()
+        logger.info(f"  Playwright 최종 URL: {final_url[:80]}")
+        return _parse_coupang_html(html)
+    except Exception as e:
+        logger.warning(f"  Playwright 스크래핑 실패: {e}")
+        return {}
+
+
 def _fetch_coupang_info(url: str) -> dict:
-    """Coupang 상품 URL에서 이름·이미지·가격 추출 (requests + meta 파싱)"""
+    """Coupang 상품 URL에서 이름·이미지·가격 추출"""
     import urllib3
     urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
+    # 1차: requests (빠름)
     try:
         resp = requests.get(url, headers=_SCRAPE_HEADERS, timeout=15,
                             verify=False, allow_redirects=True)
-        html = resp.text
-
-        # 상품명: og:title 또는 <title>
-        name = ""
-        m = re.search(r'<meta[^>]+property="og:title"[^>]+content="([^"]+)"', html)
-        if not m:
-            m = re.search(r'<meta[^>]+content="([^"]+)"[^>]+property="og:title"', html)
-        if m:
-            name = m.group(1).strip()
-        if not name:
-            m = re.search(r"<title>([^<]+)</title>", html)
-            if m:
-                name = m.group(1).split("|")[0].split("-")[0].strip()
-
-        # 이미지: og:image
-        image_url = ""
-        m = re.search(r'<meta[^>]+property="og:image"[^>]+content="([^"]+)"', html)
-        if not m:
-            m = re.search(r'<meta[^>]+content="([^"]+)"[^>]+property="og:image"', html)
-        if m:
-            image_url = m.group(1).strip()
-
-        # 가격: JSON-LD Product schema 우선, 없으면 패턴 매칭
-        price = ""
-        m = re.search(r'"price"\s*:\s*"?([\d]+)"?', html)
-        if m:
-            p = int(m.group(1))
-            if p > 100:
-                price = f"{p:,}원"
-
-        info = {"name": name, "image_url": image_url, "price": price}
-        logger.info(f"  스크래핑 완료: {name[:40]} / {price}")
-        return info
+        info = _parse_coupang_html(resp.text)
+        if info.get("name"):
+            logger.info(f"  스크래핑 완료: {info['name'][:40]} / {info.get('price','')}")
+            return info
+        logger.info(f"  requests로 상품명 미수집 (최종URL: {resp.url[:70]}) → Playwright 시도")
     except Exception as e:
-        logger.warning(f"  Coupang 정보 조회 실패: {e}")
-        return {}
+        logger.warning(f"  requests 실패: {e} → Playwright 시도")
+
+    # 2차: Playwright (JS 렌더링, 단축 URL용)
+    info = _fetch_coupang_info_playwright(url)
+    if info.get("name"):
+        logger.info(f"  Playwright 완료: {info['name'][:40]} / {info.get('price','')}")
+    return info
 
 
 def _build_prompt(product: dict) -> str:

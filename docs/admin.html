@@ -879,6 +879,17 @@ async function addCheckedToQueue() {
 async function refreshAutoCandidates() {
   if (!confirm("내일 포스팅 후보를 새로 선정할까요? (1~5분 소요)")) return;
   try {
+    // 기존 pending 후보 전체 excluded로 초기화 — 그래야 preselect가 새로 수집
+    const pending = _data["data/pending_post.json"];
+    if (pending?.candidates?.length) {
+      let changed = false;
+      pending.candidates.forEach(c => {
+        if (c.status === "pending") { c.status = "excluded"; changed = true; }
+      });
+      if (changed) {
+        await ghPut("data/pending_post.json", pending, "admin: 재선정 — 기존 후보 초기화");
+      }
+    }
     await ghDispatch("daily_preselect.yml");
     showToast("후보 선정 중 — 5분 후 새로고침하세요");
   } catch(e) { showToast("오류: "+e.message); }
