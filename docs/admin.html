@@ -383,6 +383,7 @@ body {
       <div style="font-size:11px;color:#444;margin-bottom:10px">✏ 직접 수정 가능 · 자동포스팅과 동일하게 저장 시 AI가 다듬습니다</div>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
         <button class="btn btn-gold btn-sm" onclick="savePreviewText()">저장</button>
+        <button class="btn btn-outline btn-sm" onclick="regenQueueItemText()">본문 재생성</button>
         <button class="btn btn-outline btn-sm" onclick="movePreviewToQueue()">큐에 추가</button>
       </div>
     </div>
@@ -1163,6 +1164,23 @@ function closePreview() {
   document.querySelectorAll(".ci-card").forEach(e => e.classList.remove("previewing"));
   _previewSource = "";
   _previewIdx = -1;
+}
+
+async function regenQueueItemText() {
+  if (_previewSource !== "queue" || _previewIdx < 0) {
+    showToast("큐 항목을 먼저 선택하세요"); return;
+  }
+  if (!confirm("선택된 큐 항목의 본문을 AI로 재생성할까요? (기존 본문은 삭제됩니다)")) return;
+  try {
+    const q = [...(_data["data/manual_queue.json"] || [])];
+    if (!q[_previewIdx]) return;
+    q[_previewIdx].post_text = "";
+    delete q[_previewIdx].content_gen_at;
+    await ghPut("data/manual_queue.json", q, `admin: 큐 ${_previewIdx+1}번 본문 재생성 요청`);
+    await ghDispatch("generate_queue_content.yml");
+    await loadManualQueue();
+    showToast("본문 재생성 중 — 1~2분 후 새로고침하세요");
+  } catch(e) { showToast("오류: " + e.message); }
 }
 
 async function savePreviewText() {

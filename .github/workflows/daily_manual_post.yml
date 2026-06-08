@@ -2,7 +2,10 @@ name: Manual Post (12:05 KST)
 
 on:
   schedule:
-    - cron: '5 3 * * *'   # 03:05 UTC = 12:05 KST
+    - cron: '5  3 * * *'   # 03:05 UTC = 12:05 KST (기준)
+    - cron: '5  6 * * *'   # 06:05 UTC = 15:05 KST (딜레이 보정 1차)
+    - cron: '5  9 * * *'   # 09:05 UTC = 18:05 KST (딜레이 보정 2차)
+    - cron: '5 12 * * *'   # 12:05 UTC = 21:05 KST (딜레이 보정 3차)
   workflow_dispatch:
     inputs:
       skip_delay:
@@ -50,6 +53,6 @@ jobs:
           git add docs/index.html docs/feed.html || true
           git add data/product_registry.json data/feed_posts.json data/posted_ids.json || true
           git add data/manual_queue.json || true
-          git add -u || true
+          git add -A || true
           git diff --staged --quiet || git commit -m "manual: 수동 포스팅 $(date -u +%Y-%m-%d)"
           git pull --rebase -X ours origin main && git push

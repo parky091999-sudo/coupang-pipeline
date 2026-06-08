@@ -149,7 +149,7 @@ async def run():
     import random
     skip_delay = os.getenv("SKIP_DELAY", "false").lower() == "true"
     if not skip_delay:
-        delay = random.randint(0, 55)
+        delay = random.randint(0, 15)  # 최대 15분 (기존 55분에서 축소)
         if delay:
             logger.info(f"랜덤 딜레이: {delay}분 대기...")
             await asyncio.sleep(delay * 60)
@@ -157,6 +157,14 @@ async def run():
     logger.info("=" * 50)
     logger.info(f"자동 포스팅 시작: {datetime.now(KST).strftime('%Y-%m-%d %H:%M KST')}")
     logger.info("=" * 50)
+
+    # 오늘 이미 자동 포스팅했으면 건너뜀 (cron 4회 실행 중 중복 방지)
+    today_str = datetime.now(KST).strftime("%Y-%m-%d")
+    if os.path.exists(FEED_POSTS_PATH):
+        feed = json.load(open(FEED_POSTS_PATH, encoding="utf-8"))
+        if any(p.get("timestamp", "")[:10] == today_str and p.get("post_type") == "auto" for p in feed):
+            logger.info(f"오늘({today_str}) 자동 포스팅 이미 완료 — 건너뜀")
+            return
 
     # 1. pending_post.json 에서 후보 선택
     from_pending = False
