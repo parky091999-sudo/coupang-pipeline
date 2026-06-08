@@ -64,6 +64,7 @@ _POST1_SYSTEM = """
 - 이모지 1~2개만, 본문에 자연스럽게
 - 해시태그 첫 번째는 항상 #생활꿀템, 총 4~5개
 - 가격 언급 금지
+- 제품명(상품명) 직접 언급 금지 — 기능·소재·효과·상황으로만 표현해
 - 글 전체 400~600자
 - 반드시 한국어만. 외국어(태국어·중국어·일본어 등) 절대 금지
 - 텍스트만 출력. 따옴표·메타설명·안내문구 넣지 마
@@ -369,6 +370,58 @@ def polish_post(text: str, product: dict) -> str | None:
     except Exception as e:
         logger.warning(f"polish_post 실패: {e}")
         return None
+
+
+def generate_short_name(product: dict) -> str:
+    """쿠팡 상품 전체명 → 2~4단어 간결한 표시 이름 (페이지 카드 제목용)"""
+    name = product.get("name", "")
+    if not name:
+        return ""
+    prompt = (
+        "다음 쿠팡 상품명을 2~4단어의 간결한 한국어 표시 이름으로 줄여줘.\n"
+        "브랜드명·모델번호·용량·색상·개수 등 부가정보는 제거하고 핵심 품목명만 남겨.\n"
+        "예시: \"쿠쿠 식기세척기 6인용 CDW-A0611TW 방문설치\" → \"6인용 식기세척기\"\n"
+        "예시: \"산리오 헬로키티 미니 물 정수기 디스펜서 2L 핑크\" → \"헬로키티 정수기 디스펜서\"\n"
+        "예시: \"데코아르 스마트 자동센서 스테인레스 휴지통 (20L 전용)\" → \"스마트 휴지통(20L)\"\n\n"
+        f"상품명: {name}\n\n"
+        "간결한 이름만 출력 (설명 없이):"
+    )
+    if GOOGLE_API_KEY:
+        try:
+            import google.generativeai as genai
+            genai.configure(api_key=GOOGLE_API_KEY)
+            model = genai.GenerativeModel("gemini-2.5-flash")
+            resp = model.generate_content(
+                prompt,
+                generation_config={
+                    "max_output_tokens": 50,
+                    "temperature": 0.2,
+                    "thinking_config": {"thinking_budget": 0},
+                },
+            )
+            result = (resp.text or "").strip().strip("\"'")
+            if result and len(result) <= 30:
+                return result
+        except Exception as e:
+            logger.warning(f"generate_short_name Gemini 실패: {e}")
+    if GROQ_API_KEY:
+        try:
+            import httpx, urllib3
+            urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+            from groq import Groq
+            client = Groq(api_key=GROQ_API_KEY, http_client=httpx.Client(verify=False))
+            resp = client.chat.completions.create(
+                model="llama-3.3-70b-versatile",
+                messages=[{"role": "user", "content": prompt}],
+                max_tokens=30,
+                temperature=0.2,
+            )
+            result = resp.choices[0].message.content.strip().strip("\"'")
+            if result and len(result) <= 30:
+                return result
+        except Exception as e:
+            logger.warning(f"generate_short_name Groq 실패: {e}")
+    return ""
 
 
 def generate_posts_batch(products: list[dict]) -> list[dict]:

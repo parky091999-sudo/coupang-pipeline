@@ -256,7 +256,9 @@ async def run():
         # 페이지 노출용 posted 플래그
         if code:
             from generator.registry import mark_posted
-            mark_posted(code, category=product.get("category_hint", ""))
+            from generator.content import generate_short_name
+            short_name = generate_short_name(product)
+            mark_posted(code, category=product.get("category_hint", ""), short_name=short_name)
         # pending 후보를 사용했으면 used 처리 → preselect가 새 후보로 교체
         if from_pending:
             _mark_pending_used(product.get("product_url", ""))

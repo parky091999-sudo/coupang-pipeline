@@ -159,7 +159,9 @@ async def run():
         # 페이지 노출용 posted 플래그
         if code:
             from generator.registry import mark_posted
-            mark_posted(code, category=product.get("category_hint", ""))
+            from generator.content import generate_short_name
+            short_name = generate_short_name(product)
+            mark_posted(code, category=product.get("category_hint", ""), short_name=short_name)
 
     feed = _load_json(FEED_POSTS_PATH, [])
     feed.insert(0, {

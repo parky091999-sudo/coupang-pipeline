@@ -82,7 +82,7 @@ def assign_code(product_url: str, name: str = "", image_url: str = "", category:
     return code
 
 
-def mark_posted(code: str, category: str = ""):
+def mark_posted(code: str, category: str = "", short_name: str = ""):
     """포스팅 성공 시 호출 — 해당 코드 상품을 posted=True 로 표시"""
     reg = _load()
     for v in reg["products"].values():
@@ -90,6 +90,8 @@ def mark_posted(code: str, category: str = ""):
             v["posted"] = True
             if category and not v.get("category"):
                 v["category"] = category
+            if short_name and not v.get("short_name"):
+                v["short_name"] = short_name
             if not v.get("registered_at"):
                 v["registered_at"] = datetime.now(KST).isoformat()
             break
@@ -103,6 +105,7 @@ def get_all() -> list[dict]:
         {
             "code": v["code"],
             "name": v.get("name", ""),
+            "short_name": v.get("short_name", ""),
             "url": v.get("url", ""),
             "image_url": v.get("image_url", ""),
             "category": v.get("category", ""),

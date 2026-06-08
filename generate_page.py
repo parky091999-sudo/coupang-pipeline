@@ -26,30 +26,31 @@ def build_cards(products: list[dict]) -> str:
 
     html = ""
     for p in sorted_products:
-        code     = p["code"]
-        name     = p.get("name", "")
-        url      = p.get("url") or "#"
-        img      = p.get("image_url", "")
-        category = p.get("category", "")
+        code         = p["code"]
+        name         = p.get("name", "")
+        display_name = p.get("short_name") or name
+        url          = p.get("url") or "#"
+        img          = p.get("image_url", "")
+        category     = p.get("category", "")
 
         img_tag = (
-            f'<img src="{img}" alt="{name}" loading="lazy" '
+            f'<img src="{img}" alt="{display_name}" loading="lazy" '
             f'onerror="this.parentElement.classList.add(\'no-img\')">'
             if img else ""
         )
         target = 'target="_blank" rel="noopener noreferrer"' if url != "#" else ""
 
         html += f"""
-    <div class="card" data-code="{code}" data-name="{name.lower()}" data-category="{category}">
+    <a class="card" data-code="{code}" data-name="{name.lower()}" data-category="{category}"
+       href="{url}" {target} onclick="recordClick('{code}')">
       {img_tag}
       <div class="card-body">
         <div class="badge-row">
           <span class="badge">[{code}]</span>
         </div>
-        <p class="name">{name}</p>
-        <a href="{url}" {target} class="btn" onclick="recordClick('{code}')">쿠팡에서 보기 →</a>
+        <p class="name">{display_name}</p>
       </div>
-    </div>"""
+    </a>"""
     return html
 
 
@@ -60,7 +61,7 @@ def build_html(products: list[dict]) -> str:
         [
             {
                 "code":          p["code"],
-                "name":          p.get("name", ""),
+                "name":          p.get("short_name") or p.get("name", ""),
                 "url":           p.get("url", ""),
                 "image_url":     p.get("image_url", ""),
                 "category":      p.get("category", ""),
@@ -440,12 +441,11 @@ def build_html(products: list[dict]) -> str:
     transition: all .2s;
   }}
   .grid.list-view {{ grid-template-columns: 1fr; gap: 10px; }}
-  .grid.list-view .card {{ flex-direction: row; height: 120px; }}
-  .grid.list-view .card img {{ width: 120px; height: 120px; aspect-ratio: 1/1; flex-shrink: 0; border-radius: var(--radius) 0 0 var(--radius); }}
-  .grid.list-view .card-body {{ padding: 10px 12px; justify-content: center; gap: 6px; }}
+  .grid.list-view .card {{ flex-direction: row; height: 100px; }}
+  .grid.list-view .card img {{ width: 100px; height: 100px; aspect-ratio: 1/1; flex-shrink: 0; border-radius: var(--radius) 0 0 var(--radius); }}
+  .grid.list-view .card-body {{ padding: 10px 12px; justify-content: center; gap: 4px; }}
   .grid.list-view .badge-row {{ margin-bottom: 0; }}
   .grid.list-view .name {{ -webkit-line-clamp: 2; margin-bottom: 0; font-size: 0.84rem; }}
-  .grid.list-view .btn {{ padding: 6px 10px; font-size: 0.72rem; width: fit-content; }}
 
   /* ── 카드 ── */
   .card {{
@@ -455,6 +455,8 @@ def build_html(products: list[dict]) -> str:
     border: 1px solid var(--border);
     display: flex;
     flex-direction: column;
+    text-decoration: none;
+    color: inherit;
     transition: transform .2s ease, border-color .2s, box-shadow .2s;
   }}
   .card:hover {{ transform: translateY(-3px); border-color: #3a3a3a; box-shadow: 0 10px 28px rgba(0,0,0,0.45); }}
@@ -478,10 +480,8 @@ def build_html(products: list[dict]) -> str:
   .badge-new  {{ display: inline-block; background: rgba(255,209,102,0.12); color: var(--accent2); font-size: 0.62rem; font-weight: 800; padding: 2px 6px; border-radius: 20px; border: 1px solid rgba(255,209,102,0.25); letter-spacing: 0.04em; flex-shrink: 0; }}
   .badge-hot  {{ display: inline-block; background: rgba(255,107,53,0.12); color: #FF6B6B; font-size: 0.62rem; font-weight: 800; padding: 2px 6px; border-radius: 20px; border: 1px solid rgba(255,59,59,0.25); letter-spacing: 0.04em; flex-shrink: 0; }}
   .badge-best {{ display: inline-block; background: rgba(80,220,120,0.12); color: #50DC78; font-size: 0.62rem; font-weight: 800; padding: 2px 6px; border-radius: 20px; border: 1px solid rgba(80,220,120,0.25); letter-spacing: 0.04em; flex-shrink: 0; }}
-  .name {{ font-size: 0.79rem; line-height: 1.5; color: #c0c0c0; flex: 1; margin-bottom: 10px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }}
-  body.light .name {{ color: #444; }}
-  .btn {{ display: block; text-align: center; background: var(--accent); color: #fff; text-decoration: none; padding: 8px 6px; border-radius: 10px; font-size: 0.75rem; font-weight: 700; transition: opacity .15s; }}
-  .btn:hover {{ opacity: 0.82; }}
+  .name {{ font-size: 0.82rem; font-weight: 600; line-height: 1.45; color: #c0c0c0; flex: 1; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }}
+  body.light .name {{ color: #333; }}
 
   .empty, #no-result {{ text-align: center; padding: 60px 20px; color: var(--text2); font-size: 0.88rem; grid-column: 1 / -1; }}
   #no-result {{ display: none; }}

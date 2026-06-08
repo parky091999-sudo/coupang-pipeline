@@ -355,12 +355,11 @@
     transition: all .2s;
   }
   .grid.list-view { grid-template-columns: 1fr; gap: 10px; }
-  .grid.list-view .card { flex-direction: row; height: 120px; }
-  .grid.list-view .card img { width: 120px; height: 120px; aspect-ratio: 1/1; flex-shrink: 0; border-radius: var(--radius) 0 0 var(--radius); }
-  .grid.list-view .card-body { padding: 10px 12px; justify-content: center; gap: 6px; }
+  .grid.list-view .card { flex-direction: row; height: 100px; }
+  .grid.list-view .card img { width: 100px; height: 100px; aspect-ratio: 1/1; flex-shrink: 0; border-radius: var(--radius) 0 0 var(--radius); }
+  .grid.list-view .card-body { padding: 10px 12px; justify-content: center; gap: 4px; }
   .grid.list-view .badge-row { margin-bottom: 0; }
   .grid.list-view .name { -webkit-line-clamp: 2; margin-bottom: 0; font-size: 0.84rem; }
-  .grid.list-view .btn { padding: 6px 10px; font-size: 0.72rem; width: fit-content; }
 
   /* ── 카드 ── */
   .card {
@@ -370,6 +369,8 @@
     border: 1px solid var(--border);
     display: flex;
     flex-direction: column;
+    text-decoration: none;
+    color: inherit;
     transition: transform .2s ease, border-color .2s, box-shadow .2s;
   }
   .card:hover { transform: translateY(-3px); border-color: #3a3a3a; box-shadow: 0 10px 28px rgba(0,0,0,0.45); }
@@ -393,10 +394,8 @@
   .badge-new  { display: inline-block; background: rgba(255,209,102,0.12); color: var(--accent2); font-size: 0.62rem; font-weight: 800; padding: 2px 6px; border-radius: 20px; border: 1px solid rgba(255,209,102,0.25); letter-spacing: 0.04em; flex-shrink: 0; }
   .badge-hot  { display: inline-block; background: rgba(255,107,53,0.12); color: #FF6B6B; font-size: 0.62rem; font-weight: 800; padding: 2px 6px; border-radius: 20px; border: 1px solid rgba(255,59,59,0.25); letter-spacing: 0.04em; flex-shrink: 0; }
   .badge-best { display: inline-block; background: rgba(80,220,120,0.12); color: #50DC78; font-size: 0.62rem; font-weight: 800; padding: 2px 6px; border-radius: 20px; border: 1px solid rgba(80,220,120,0.25); letter-spacing: 0.04em; flex-shrink: 0; }
-  .name { font-size: 0.79rem; line-height: 1.5; color: #c0c0c0; flex: 1; margin-bottom: 10px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
-  body.light .name { color: #444; }
-  .btn { display: block; text-align: center; background: var(--accent); color: #fff; text-decoration: none; padding: 8px 6px; border-radius: 10px; font-size: 0.75rem; font-weight: 700; transition: opacity .15s; }
-  .btn:hover { opacity: 0.82; }
+  .name { font-size: 0.82rem; font-weight: 600; line-height: 1.45; color: #c0c0c0; flex: 1; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+  body.light .name { color: #333; }
 
   .empty, #no-result { text-align: center; padding: 60px 20px; color: var(--text2); font-size: 0.88rem; grid-column: 1 / -1; }
   #no-result { display: none; }
@@ -488,96 +487,96 @@
 
 <div class="grid" id="grid">
 
-    <div class="card" data-code="009" data-name="더마 led 마스크 피부관리기 kd-m 클렙튼 셀프 스킨케어 홈케어" data-category="뷰티">
-      <img src="https://shopping-phinf.pstatic.net/main_2165635/21656357875.47.jpg" alt="더마 LED 마스크 피부관리기 KD-M 클렙튼 셀프 스킨케어 홈케어" loading="lazy" onerror="this.parentElement.classList.add('no-img')">
+    <a class="card" data-code="009" data-name="더마 led 마스크 피부관리기 kd-m 클렙튼 셀프 스킨케어 홈케어" data-category="뷰티"
+       href="https://link.coupang.com/re/PCSNAVERPCSDP?pageKey=144078772&ctag=144078772&lptag=I418339449&itemId=418339449&vendorItemId=4027752053&spec=10305197" target="_blank" rel="noopener noreferrer" onclick="recordClick('009')">
+      <img src="https://shopping-phinf.pstatic.net/main_2165635/21656357875.47.jpg" alt="더마 LED 마스크 피부관리기" loading="lazy" onerror="this.parentElement.classList.add('no-img')">
       <div class="card-body">
         <div class="badge-row">
           <span class="badge">[009]</span>
         </div>
-        <p class="name">더마 LED 마스크 피부관리기 KD-M 클렙튼 셀프 스킨케어 홈케어</p>
-        <a href="https://link.coupang.com/re/PCSNAVERPCSDP?pageKey=144078772&ctag=144078772&lptag=I418339449&itemId=418339449&vendorItemId=4027752053&spec=10305197" target="_blank" rel="noopener noreferrer" class="btn" onclick="recordClick('009')">쿠팡에서 보기 →</a>
+        <p class="name">더마 LED 마스크 피부관리기</p>
       </div>
-    </div>
-    <div class="card" data-code="008" data-name="밥도둑세상 국내산간재미 간재미무침 1k 1kg 1개" data-category="생활">
-      <img src="https://shopping-phinf.pstatic.net/main_5465817/54658171664.jpg" alt="밥도둑세상 국내산간재미 간재미무침 1k 1kg 1개" loading="lazy" onerror="this.parentElement.classList.add('no-img')">
+    </a>
+    <a class="card" data-code="008" data-name="밥도둑세상 국내산간재미 간재미무침 1k 1kg 1개" data-category="생활"
+       href="https://link.coupang.com/re/PCSNAVERPCSDP?pageKey=1950168221&ctag=1950168221&lptag=I3312740152&itemId=3312740152&vendorItemId=70068989986&spec=10305199" target="_blank" rel="noopener noreferrer" onclick="recordClick('008')">
+      <img src="https://shopping-phinf.pstatic.net/main_5465817/54658171664.jpg" alt="국내산 간재미무침" loading="lazy" onerror="this.parentElement.classList.add('no-img')">
       <div class="card-body">
         <div class="badge-row">
           <span class="badge">[008]</span>
         </div>
-        <p class="name">밥도둑세상 국내산간재미 간재미무침 1k 1kg 1개</p>
-        <a href="https://link.coupang.com/re/PCSNAVERPCSDP?pageKey=1950168221&ctag=1950168221&lptag=I3312740152&itemId=3312740152&vendorItemId=70068989986&spec=10305199" target="_blank" rel="noopener noreferrer" class="btn" onclick="recordClick('008')">쿠팡에서 보기 →</a>
+        <p class="name">국내산 간재미무침</p>
       </div>
-    </div>
-    <div class="card" data-code="007" data-name="비즈 목덜이 넥밴드 선풍기 2개   화이트1+1 bz-fl20" data-category="">
-      <img src="https://shopping-phinf.pstatic.net/main_5924557/59245572574.1.jpg" alt="비즈 목덜이 넥밴드 선풍기 2개   화이트1+1 BZ-FL20" loading="lazy" onerror="this.parentElement.classList.add('no-img')">
+    </a>
+    <a class="card" data-code="007" data-name="비즈 목덜이 넥밴드 선풍기 2개   화이트1+1 bz-fl20" data-category=""
+       href="https://link.coupang.com/re/PCSNAVERPCSDP?pageKey=5954126991&ctag=5954126991&lptag=I19303587546&itemId=19303587546&vendorItemId=92075466958&spec=10305198" target="_blank" rel="noopener noreferrer" onclick="recordClick('007')">
+      <img src="https://shopping-phinf.pstatic.net/main_5924557/59245572574.1.jpg" alt="넥밴드 목걸이형 선풍기" loading="lazy" onerror="this.parentElement.classList.add('no-img')">
       <div class="card-body">
         <div class="badge-row">
           <span class="badge">[007]</span>
         </div>
-        <p class="name">비즈 목덜이 넥밴드 선풍기 2개   화이트1+1 BZ-FL20</p>
-        <a href="https://link.coupang.com/re/PCSNAVERPCSDP?pageKey=5954126991&ctag=5954126991&lptag=I19303587546&itemId=19303587546&vendorItemId=92075466958&spec=10305198" target="_blank" rel="noopener noreferrer" class="btn" onclick="recordClick('007')">쿠팡에서 보기 →</a>
+        <p class="name">넥밴드 목걸이형 선풍기</p>
       </div>
-    </div>
-    <div class="card" data-code="006" data-name="쿠쿠 식기세척기 6인용 cdw-a0611tw 방문설치" data-category="주방">
-      <img src="https://shopping-phinf.pstatic.net/main_5932285/59322851701.1.jpg" alt="쿠쿠 식기세척기 6인용 CDW-A0611TW 방문설치" loading="lazy" onerror="this.parentElement.classList.add('no-img')">
+    </a>
+    <a class="card" data-code="006" data-name="쿠쿠 식기세척기 6인용 cdw-a0611tw 방문설치" data-category="주방"
+       href="https://link.coupang.com/re/PCSNAVERPCSDP?pageKey=5655029966&ctag=5655029966&lptag=I9265334954&itemId=9265334954&vendorItemId=71163768673&spec=10305199" target="_blank" rel="noopener noreferrer" onclick="recordClick('006')">
+      <img src="https://shopping-phinf.pstatic.net/main_5932285/59322851701.1.jpg" alt="6인용 식기세척기" loading="lazy" onerror="this.parentElement.classList.add('no-img')">
       <div class="card-body">
         <div class="badge-row">
           <span class="badge">[006]</span>
         </div>
-        <p class="name">쿠쿠 식기세척기 6인용 CDW-A0611TW 방문설치</p>
-        <a href="https://link.coupang.com/re/PCSNAVERPCSDP?pageKey=5655029966&ctag=5655029966&lptag=I9265334954&itemId=9265334954&vendorItemId=71163768673&spec=10305199" target="_blank" rel="noopener noreferrer" class="btn" onclick="recordClick('006')">쿠팡에서 보기 →</a>
+        <p class="name">6인용 식기세척기</p>
       </div>
-    </div>
-    <div class="card" data-code="005" data-name="데코아르 스마트 자동센서 스테인레스 휴지통 (20l 전용)" data-category="생활">
-      <img src="https://shopping-phinf.pstatic.net/main_5771787/57717876802.jpg" alt="데코아르 스마트 자동센서 스테인레스 휴지통 (20L 전용)" loading="lazy" onerror="this.parentElement.classList.add('no-img')">
+    </a>
+    <a class="card" data-code="005" data-name="데코아르 스마트 자동센서 스테인레스 휴지통 (20l 전용)" data-category="생활"
+       href="https://link.coupang.com/re/PCSNAVERPCSDP?pageKey=6582577923&ctag=6582577923&lptag=l050201694728&itemId=40208950176&vendorItemId=92082014509&spec=10305198" target="_blank" rel="noopener noreferrer" onclick="recordClick('005')">
+      <img src="https://shopping-phinf.pstatic.net/main_5771787/57717876802.jpg" alt="스마트 휴지통(20L)" loading="lazy" onerror="this.parentElement.classList.add('no-img')">
       <div class="card-body">
         <div class="badge-row">
           <span class="badge">[005]</span>
         </div>
-        <p class="name">데코아르 스마트 자동센서 스테인레스 휴지통 (20L 전용)</p>
-        <a href="https://link.coupang.com/re/PCSNAVERPCSDP?pageKey=6582577923&ctag=6582577923&lptag=l050201694728&itemId=40208950176&vendorItemId=92082014509&spec=10305198" target="_blank" rel="noopener noreferrer" class="btn" onclick="recordClick('005')">쿠팡에서 보기 →</a>
+        <p class="name">스마트 휴지통(20L)</p>
       </div>
-    </div>
-    <div class="card" data-code="004" data-name="산리오 헬로키티 미니 물 정수기 디스펜서 2l 핑크" data-category="주방">
-      <img src="https://shopping-phinf.pstatic.net/main_5880827/58808274258.jpg" alt="산리오 헬로키티 미니 물 정수기 디스펜서 2L 핑크" loading="lazy" onerror="this.parentElement.classList.add('no-img')">
+    </a>
+    <a class="card" data-code="004" data-name="산리오 헬로키티 미니 물 정수기 디스펜서 2l 핑크" data-category="주방"
+       href="https://link.coupang.com/re/PCSNAVERPCSDP?pageKey=8645052268&ctag=8645052268&lptag=P8645052268&itemId=27727944467&vendorItemId=94689248135&spec=10305199" target="_blank" rel="noopener noreferrer" onclick="recordClick('004')">
+      <img src="https://shopping-phinf.pstatic.net/main_5880827/58808274258.jpg" alt="헬로키티 정수기 디스펜서" loading="lazy" onerror="this.parentElement.classList.add('no-img')">
       <div class="card-body">
         <div class="badge-row">
           <span class="badge">[004]</span>
         </div>
-        <p class="name">산리오 헬로키티 미니 물 정수기 디스펜서 2L 핑크</p>
-        <a href="https://link.coupang.com/re/PCSNAVERPCSDP?pageKey=8645052268&ctag=8645052268&lptag=P8645052268&itemId=27727944467&vendorItemId=94689248135&spec=10305199" target="_blank" rel="noopener noreferrer" class="btn" onclick="recordClick('004')">쿠팡에서 보기 →</a>
+        <p class="name">헬로키티 정수기 디스펜서</p>
       </div>
-    </div>
-    <div class="card" data-code="003" data-name="clabo 딥클린 샴푸 트로피칼 시트러스 960ml 2개 약산성 두피케어" data-category="뷰티">
-      <img src="https://shopping-phinf.pstatic.net/main_5720025/57200255943.jpg" alt="CLABO 딥클린 샴푸 트로피칼 시트러스 960ml 2개 약산성 두피케어" loading="lazy" onerror="this.parentElement.classList.add('no-img')">
+    </a>
+    <a class="card" data-code="003" data-name="clabo 딥클린 샴푸 트로피칼 시트러스 960ml 2개 약산성 두피케어" data-category="뷰티"
+       href="https://link.coupang.com/re/PCSNAVERPCSDP?pageKey=5652252849&ctag=5652252849&lptag=I8574817075&itemId=8574817075&vendorItemId=92419089816&spec=10305197" target="_blank" rel="noopener noreferrer" onclick="recordClick('003')">
+      <img src="https://shopping-phinf.pstatic.net/main_5720025/57200255943.jpg" alt="CLABO 딥클린 샴푸" loading="lazy" onerror="this.parentElement.classList.add('no-img')">
       <div class="card-body">
         <div class="badge-row">
           <span class="badge">[003]</span>
         </div>
-        <p class="name">CLABO 딥클린 샴푸 트로피칼 시트러스 960ml 2개 약산성 두피케어</p>
-        <a href="https://link.coupang.com/re/PCSNAVERPCSDP?pageKey=5652252849&ctag=5652252849&lptag=I8574817075&itemId=8574817075&vendorItemId=92419089816&spec=10305197" target="_blank" rel="noopener noreferrer" class="btn" onclick="recordClick('003')">쿠팡에서 보기 →</a>
+        <p class="name">CLABO 딥클린 샴푸</p>
       </div>
-    </div>
-    <div class="card" data-code="002" data-name="네오플램 아르코 우디스텐 도마 우드화이버 원목 압축도마 1개 패들" data-category="주방">
-      <img src="https://shopping-phinf.pstatic.net/main_5912012/59120122138.jpg" alt="네오플램 아르코 우디스텐 도마 우드화이버 원목 압축도마 1개 패들" loading="lazy" onerror="this.parentElement.classList.add('no-img')">
+    </a>
+    <a class="card" data-code="002" data-name="네오플램 아르코 우디스텐 도마 우드화이버 원목 압축도마 1개 패들" data-category="주방"
+       href="https://link.coupang.com/re/PCSNAVERPCSDP?pageKey=9398328940&ctag=9398328940&lptag=I27914508308&itemId=27914508308&vendorItemId=94873137382&spec=10305199" target="_blank" rel="noopener noreferrer" onclick="recordClick('002')">
+      <img src="https://shopping-phinf.pstatic.net/main_5912012/59120122138.jpg" alt="우디스텐 원목 압축도마" loading="lazy" onerror="this.parentElement.classList.add('no-img')">
       <div class="card-body">
         <div class="badge-row">
           <span class="badge">[002]</span>
         </div>
-        <p class="name">네오플램 아르코 우디스텐 도마 우드화이버 원목 압축도마 1개 패들</p>
-        <a href="https://link.coupang.com/re/PCSNAVERPCSDP?pageKey=9398328940&ctag=9398328940&lptag=I27914508308&itemId=27914508308&vendorItemId=94873137382&spec=10305199" target="_blank" rel="noopener noreferrer" class="btn" onclick="recordClick('002')">쿠팡에서 보기 →</a>
+        <p class="name">우디스텐 원목 압축도마</p>
       </div>
-    </div>
-    <div class="card" data-code="001" data-name="라비드 비비드 퍼플 속건조 케어 수분 크림 50g 2개" data-category="뷰티">
-      <img src="https://shopping-phinf.pstatic.net/main_5539049/55390497493.9.jpg" alt="라비드 비비드 퍼플 속건조 케어 수분 크림 50g 2개" loading="lazy" onerror="this.parentElement.classList.add('no-img')">
+    </a>
+    <a class="card" data-code="001" data-name="라비드 비비드 퍼플 속건조 케어 수분 크림 50g 2개" data-category="뷰티"
+       href="https://link.coupang.com/re/PCSNAVERPCSDP?pageKey=8849967732&ctag=8849967732&lptag=I25798233944&itemId=25798233944&vendorItemId=92800900135&spec=10305199" target="_blank" rel="noopener noreferrer" onclick="recordClick('001')">
+      <img src="https://shopping-phinf.pstatic.net/main_5539049/55390497493.9.jpg" alt="라비드 수분 크림" loading="lazy" onerror="this.parentElement.classList.add('no-img')">
       <div class="card-body">
         <div class="badge-row">
           <span class="badge">[001]</span>
         </div>
-        <p class="name">라비드 비비드 퍼플 속건조 케어 수분 크림 50g 2개</p>
-        <a href="https://link.coupang.com/re/PCSNAVERPCSDP?pageKey=8849967732&ctag=8849967732&lptag=I25798233944&itemId=25798233944&vendorItemId=92800900135&spec=10305199" target="_blank" rel="noopener noreferrer" class="btn" onclick="recordClick('001')">쿠팡에서 보기 →</a>
+        <p class="name">라비드 수분 크림</p>
       </div>
-    </div>
+    </a>
   <div id="no-result">검색 결과가 없습니다</div>
 </div>
 
@@ -605,7 +604,7 @@
 
 <script>
   /* ── 상품 데이터 ── */
-  const PRODUCTS_DATA = [{"code": "001", "name": "라비드 비비드 퍼플 속건조 케어 수분 크림 50g 2개", "url": "https://link.coupang.com/re/PCSNAVERPCSDP?pageKey=8849967732&ctag=8849967732&lptag=I25798233944&itemId=25798233944&vendorItemId=92800900135&spec=10305199", "image_url": "https://shopping-phinf.pstatic.net/main_5539049/55390497493.9.jpg", "category": "뷰티", "registered_at": ""}, {"code": "002", "name": "네오플램 아르코 우디스텐 도마 우드화이버 원목 압축도마 1개 패들", "url": "https://link.coupang.com/re/PCSNAVERPCSDP?pageKey=9398328940&ctag=9398328940&lptag=I27914508308&itemId=27914508308&vendorItemId=94873137382&spec=10305199", "image_url": "https://shopping-phinf.pstatic.net/main_5912012/59120122138.jpg", "category": "주방", "registered_at": ""}, {"code": "003", "name": "CLABO 딥클린 샴푸 트로피칼 시트러스 960ml 2개 약산성 두피케어", "url": "https://link.coupang.com/re/PCSNAVERPCSDP?pageKey=5652252849&ctag=5652252849&lptag=I8574817075&itemId=8574817075&vendorItemId=92419089816&spec=10305197", "image_url": "https://shopping-phinf.pstatic.net/main_5720025/57200255943.jpg", "category": "뷰티", "registered_at": ""}, {"code": "004", "name": "산리오 헬로키티 미니 물 정수기 디스펜서 2L 핑크", "url": "https://link.coupang.com/re/PCSNAVERPCSDP?pageKey=8645052268&ctag=8645052268&lptag=P8645052268&itemId=27727944467&vendorItemId=94689248135&spec=10305199", "image_url": "https://shopping-phinf.pstatic.net/main_5880827/58808274258.jpg", "category": "주방", "registered_at": ""}, {"code": "005", "name": "데코아르 스마트 자동센서 스테인레스 휴지통 (20L 전용)", "url": "https://link.coupang.com/re/PCSNAVERPCSDP?pageKey=6582577923&ctag=6582577923&lptag=l050201694728&itemId=40208950176&vendorItemId=92082014509&spec=10305198", "image_url": "https://shopping-phinf.pstatic.net/main_5771787/57717876802.jpg", "category": "생활", "registered_at": ""}, {"code": "006", "name": "쿠쿠 식기세척기 6인용 CDW-A0611TW 방문설치", "url": "https://link.coupang.com/re/PCSNAVERPCSDP?pageKey=5655029966&ctag=5655029966&lptag=I9265334954&itemId=9265334954&vendorItemId=71163768673&spec=10305199", "image_url": "https://shopping-phinf.pstatic.net/main_5932285/59322851701.1.jpg", "category": "주방", "registered_at": ""}, {"code": "007", "name": "비즈 목덜이 넥밴드 선풍기 2개   화이트1+1 BZ-FL20", "url": "https://link.coupang.com/re/PCSNAVERPCSDP?pageKey=5954126991&ctag=5954126991&lptag=I19303587546&itemId=19303587546&vendorItemId=92075466958&spec=10305198", "image_url": "https://shopping-phinf.pstatic.net/main_5924557/59245572574.1.jpg", "category": "", "registered_at": ""}, {"code": "008", "name": "밥도둑세상 국내산간재미 간재미무침 1k 1kg 1개", "url": "https://link.coupang.com/re/PCSNAVERPCSDP?pageKey=1950168221&ctag=1950168221&lptag=I3312740152&itemId=3312740152&vendorItemId=70068989986&spec=10305199", "image_url": "https://shopping-phinf.pstatic.net/main_5465817/54658171664.jpg", "category": "생활", "registered_at": "2026-06-07T22:20:14.665107+09:00"}, {"code": "009", "name": "더마 LED 마스크 피부관리기 KD-M 클렙튼 셀프 스킨케어 홈케어", "url": "https://link.coupang.com/re/PCSNAVERPCSDP?pageKey=144078772&ctag=144078772&lptag=I418339449&itemId=418339449&vendorItemId=4027752053&spec=10305197", "image_url": "https://shopping-phinf.pstatic.net/main_2165635/21656357875.47.jpg", "category": "뷰티", "registered_at": "2026-06-07T22:24:31.500535+09:00"}];
+  const PRODUCTS_DATA = [{"code": "001", "name": "라비드 수분 크림", "url": "https://link.coupang.com/re/PCSNAVERPCSDP?pageKey=8849967732&ctag=8849967732&lptag=I25798233944&itemId=25798233944&vendorItemId=92800900135&spec=10305199", "image_url": "https://shopping-phinf.pstatic.net/main_5539049/55390497493.9.jpg", "category": "뷰티", "registered_at": ""}, {"code": "002", "name": "우디스텐 원목 압축도마", "url": "https://link.coupang.com/re/PCSNAVERPCSDP?pageKey=9398328940&ctag=9398328940&lptag=I27914508308&itemId=27914508308&vendorItemId=94873137382&spec=10305199", "image_url": "https://shopping-phinf.pstatic.net/main_5912012/59120122138.jpg", "category": "주방", "registered_at": ""}, {"code": "003", "name": "CLABO 딥클린 샴푸", "url": "https://link.coupang.com/re/PCSNAVERPCSDP?pageKey=5652252849&ctag=5652252849&lptag=I8574817075&itemId=8574817075&vendorItemId=92419089816&spec=10305197", "image_url": "https://shopping-phinf.pstatic.net/main_5720025/57200255943.jpg", "category": "뷰티", "registered_at": ""}, {"code": "004", "name": "헬로키티 정수기 디스펜서", "url": "https://link.coupang.com/re/PCSNAVERPCSDP?pageKey=8645052268&ctag=8645052268&lptag=P8645052268&itemId=27727944467&vendorItemId=94689248135&spec=10305199", "image_url": "https://shopping-phinf.pstatic.net/main_5880827/58808274258.jpg", "category": "주방", "registered_at": ""}, {"code": "005", "name": "스마트 휴지통(20L)", "url": "https://link.coupang.com/re/PCSNAVERPCSDP?pageKey=6582577923&ctag=6582577923&lptag=l050201694728&itemId=40208950176&vendorItemId=92082014509&spec=10305198", "image_url": "https://shopping-phinf.pstatic.net/main_5771787/57717876802.jpg", "category": "생활", "registered_at": ""}, {"code": "006", "name": "6인용 식기세척기", "url": "https://link.coupang.com/re/PCSNAVERPCSDP?pageKey=5655029966&ctag=5655029966&lptag=I9265334954&itemId=9265334954&vendorItemId=71163768673&spec=10305199", "image_url": "https://shopping-phinf.pstatic.net/main_5932285/59322851701.1.jpg", "category": "주방", "registered_at": ""}, {"code": "007", "name": "넥밴드 목걸이형 선풍기", "url": "https://link.coupang.com/re/PCSNAVERPCSDP?pageKey=5954126991&ctag=5954126991&lptag=I19303587546&itemId=19303587546&vendorItemId=92075466958&spec=10305198", "image_url": "https://shopping-phinf.pstatic.net/main_5924557/59245572574.1.jpg", "category": "", "registered_at": ""}, {"code": "008", "name": "국내산 간재미무침", "url": "https://link.coupang.com/re/PCSNAVERPCSDP?pageKey=1950168221&ctag=1950168221&lptag=I3312740152&itemId=3312740152&vendorItemId=70068989986&spec=10305199", "image_url": "https://shopping-phinf.pstatic.net/main_5465817/54658171664.jpg", "category": "생활", "registered_at": "2026-06-07T22:20:14.665107+09:00"}, {"code": "009", "name": "더마 LED 마스크 피부관리기", "url": "https://link.coupang.com/re/PCSNAVERPCSDP?pageKey=144078772&ctag=144078772&lptag=I418339449&itemId=418339449&vendorItemId=4027752053&spec=10305197", "image_url": "https://shopping-phinf.pstatic.net/main_2165635/21656357875.47.jpg", "category": "뷰티", "registered_at": "2026-06-07T22:24:31.500535+09:00"}];
 
   /* ── 카테고리 자동 추론 ── */
   function inferCategory(name) {
