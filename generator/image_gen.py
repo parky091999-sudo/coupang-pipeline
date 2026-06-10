@@ -24,6 +24,7 @@ _PROMPTS = [
     "이 상품 사진을 깔끔한 흰색 스튜디오 배경의 전문 제품 사진으로 변환해줘. 상품은 그대로 유지하고 배경만 순백으로 바꿔줘.",
     "이 상품 사진을 따뜻한 자연광이 있는 라이프스타일 사진으로 변환해줘. 상품을 자연스러운 생활 공간에 배치해줘.",
     "이 상품 사진을 미니멀하고 세련된 클로즈업으로 변환해줘. 상품을 화면 가득 채우고 배경은 부드럽게 흐릿하게 처리해줘.",
+    "이 상품을 실제로 사용하는 한국인의 모습을 자연스럽고 생동감 있게 그려줘. 일상적인 배경에서 사람이 제품을 직접 사용하는 장면으로, 광고스럽지 않은 현실적인 느낌으로 만들어줘.",
 ]
 
 
@@ -118,5 +119,5 @@ def generate_and_upload_images(product: dict, post_text: str = "") -> list[str]:
         except Exception as e:
             logger.warning(f"  이미지 {i+1} 생성 실패: {e}")
 
-    logger.info(f"이미지 생성 결과: {len(results)}장 성공 / 3장 시도")
+    logger.info(f"이미지 생성 결과: {len(results)}장 성공 / {len(_PROMPTS)}장 시도")
     return results

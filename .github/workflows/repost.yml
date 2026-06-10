@@ -1,0 +1,51 @@
+name: Repost with Image
+
+on:
+  workflow_dispatch:
+    inputs:
+      product_code:
+        description: '재포스팅할 상품 코드 (예: 010, 013)'
+        required: true
+        type: string
+
+concurrency:
+  group: threads-posting
+  cancel-in-progress: false
+
+jobs:
+  repost:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.PAT_TOKEN }}
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Pull latest data
+        run: git pull --rebase -X theirs origin main
+
+      - name: Repost with image
+        env:
+          THREADS_ACCESS_TOKEN: ${{ secrets.THREADS_ACCESS_TOKEN }}
+          THREADS_USER_ID: ${{ secrets.THREADS_USER_ID }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GOOGLE_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          IMGBB_API_KEY: ${{ secrets.IMGBB_API_KEY }}
+          NAVER_CLIENT_ID: ${{ secrets.NAVER_CLIENT_ID }}
+          NAVER_CLIENT_SECRET: ${{ secrets.NAVER_CLIENT_SECRET }}
+        run: python scripts/repost.py ${{ inputs.product_code }}
+
+      - name: Commit and push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -u
+          git diff --cached --quiet || git commit -m "repost: [${{ inputs.product_code }}] 이미지 추가 재게시"
+          git pull --rebase -X theirs origin main
+          git push origin main
