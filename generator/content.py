@@ -209,7 +209,6 @@ def _generate_with_gemini(product: dict, product_code: str) -> str | None:
                 generation_config={
                     "max_output_tokens": 2000,
                     "temperature": 0.9,
-                    "thinking_config": {"thinking_budget": 0},
                 },
             )
             candidate = resp.text.strip().strip("\"'""''") if resp.text else ""
@@ -480,7 +479,6 @@ def generate_short_name(product: dict) -> str:
                 generation_config={
                     "max_output_tokens": 50,
                     "temperature": 0.2,
-                    "thinking_config": {"thinking_budget": 0},
                 },
             )
             result = (resp.text or "").strip().strip("\"'")
@@ -583,7 +581,6 @@ def generate_general_post(post_type: str | None = None) -> str | None:
                 generation_config={
                     "max_output_tokens": 1000,
                     "temperature": 0.95,
-                    "thinking_config": {"thinking_budget": 0},
                 },
             )
             text = resp.text.strip().strip("\"'""''") if resp.text else ""

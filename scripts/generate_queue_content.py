@@ -192,7 +192,6 @@ def _generate(product: dict) -> str | None:
                     generation_config={
                         "max_output_tokens": 2000,
                         "temperature": 0.85,
-                        "thinking_config": {"thinking_budget": 0},
                     },
                 )
                 text = resp.text.strip() if resp.text else ""
