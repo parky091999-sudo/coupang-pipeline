@@ -1,5 +1,5 @@
 {
-  "next_code": 15,
+  "next_code": 16,
   "blocked_item_ids": [],
   "products": {
     "https://link.coupang.com/re/PCSNAVERPCSDP?pageKey=8849967732&ctag=8849967732&lpt": {
@@ -139,6 +139,16 @@
       "registered_at": "2026-06-11T01:59:20.118454+09:00",
       "posted": true,
       "short_name": "삼각 건조대"
+    },
+    "https://link.coupang.com/re/PCSNAVERPCSDP?pageKey=9526850240&ctag=9526850240&lpt": {
+      "code": "015",
+      "name": "휴대용 의류건조기 접이식 소형 여행용 자취 원룸 1인용 미니건조기  기본 색상  아이보리 건조 스마트 타이머 휴대용 200w",
+      "url": "https://link.coupang.com/re/PCSNAVERPCSDP?pageKey=9526850240&ctag=9526850240&lptag=I28406301581&itemId=28406301581&vendorItemId=95552128940&spec=10305199",
+      "image_url": "https://shopping-phinf.pstatic.net/main_5998634/59986344743.2.jpg",
+      "category": "",
+      "registered_at": "2026-06-11T02:45:32.934658+09:00",
+      "posted": true,
+      "short_name": "휴대"
     }
   }
 }
