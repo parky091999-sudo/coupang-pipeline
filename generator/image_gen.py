@@ -97,7 +97,7 @@ def generate_and_upload_images(product: dict, post_text: str = "") -> list[str]:
 
     for i, prompt in enumerate(_PROMPTS):
         try:
-            logger.info(f"  이미지 {i+1}/3 생성 중...")
+            logger.info(f"  이미지 {i+1}/{len(_PROMPTS)} 생성 중...")
             response = client.models.generate_content(
                 model="gemini-3.1-flash-image",
                 contents=[prompt, pil_image],
