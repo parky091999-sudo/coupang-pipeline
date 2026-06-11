@@ -96,12 +96,16 @@ def run():
                     if not p:
                         continue
 
+                    # 쿠팡 상품만 (파트너스 정책)
+                    url = p.get("product_url", "")
+                    if not url or "coupang.com" not in url.lower():
+                        continue
+
                     # 중국산/저품질 필터
                     if is_chinese_seller_style(p.get("name", "")):
                         continue
 
-                    url = p.get("product_url", "")
-                    if not url or url in seen_urls or url in rejected:
+                    if url in seen_urls or url in rejected:
                         continue
 
                     seen_urls.add(url)
