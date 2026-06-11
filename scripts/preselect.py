@@ -22,7 +22,7 @@ from generator.content import generate_post
 PENDING_PATH     = os.path.join(DATA_DIR, "pending_post.json")
 POSTED_IDS_PATH  = os.path.join(DATA_DIR, "posted_ids.json")
 REJECTED_PATH    = os.path.join(DATA_DIR, "rejected_products.json")
-CANDIDATES_COUNT = 3
+CANDIDATES_COUNT = 6  # 하루 2개씩 포스팅하므로 여유있게 6개 준비
 
 KST = timezone(timedelta(hours=9))
 

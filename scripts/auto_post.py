@@ -162,176 +162,178 @@ async def run():
     logger.info(f"자동 포스팅 시작: {datetime.now(KST).strftime('%Y-%m-%d %H:%M KST')}")
     logger.info("=" * 50)
 
-    # 오늘 이미 자동 포스팅 '성공'했으면 건너뜀 (실패 건은 보정 크론이 재시도)
+    # 오늘 이미 자동 포스팅 2개 완료했으면 건너뜀 (실패 건은 보정 크론이 재시도)
     today_str = datetime.now(KST).strftime("%Y-%m-%d")
     if os.path.exists(FEED_POSTS_PATH):
         feed = json.load(open(FEED_POSTS_PATH, encoding="utf-8"))
-        if any(
-            p.get("timestamp", "")[:10] == today_str
+        auto_posted_today = sum(
+            1 for p in feed
+            if p.get("timestamp", "")[:10] == today_str
             and p.get("post_type") == "auto"
             and p.get("status") == "posted"
-            for p in feed
-        ):
-            logger.info(f"오늘({today_str}) 자동 포스팅 이미 완료 — 건너뜀")
+        )
+        if auto_posted_today >= 2:
+            logger.info(f"오늘({today_str}) 자동 포스팅 2개 완료 — 건너뜀")
             return
 
-    # 1. pending_post.json 에서 후보 선택
-    from_pending = False
-    candidate = _pick_from_pending()
+    # 1. 최대 2개까지 포스팅
+    for post_idx in range(2):
+        logger.info(f"\n[포스팅 {post_idx + 1}/2]")
 
-    # 2. 없으면 실시간 수집
-    if not candidate:
-        logger.info("[폴백] 실시간 수집 모드...")
-        candidate = await _collect_fallback()
-    else:
-        from_pending = True
+        from_pending = False
+        candidate = _pick_from_pending()
 
-    if not candidate:
-        logger.warning("포스팅할 상품 없음 — 종료")
-        return
-
-    # 3. 편집된 텍스트면 포스팅 전 AI 다듬기
-    if candidate.get("edited") and candidate.get("post_text"):
-        logger.info("편집된 텍스트 감지 → AI 다듬기 실행...")
-        try:
-            from generator.content import polish_post
-            polished = polish_post(candidate["post_text"], candidate.get("product", {}))
-            if polished:
-                candidate["post_text"] = polished
-                logger.info("  다듬기 완료")
-            else:
-                logger.info("  다듬기 실패 → 편집본 그대로 사용")
-        except Exception as e:
-            logger.warning(f"  다듬기 오류: {e}")
-
-    # 4. 포스팅
-    from poster.threads import post_thread_api
-    from poster.comment_replier import add_recent_post, check_and_reply_comments
-    from poster.engager import run_engagement_session
-
-    product     = candidate["product"]
-    post_text   = candidate["post_text"]
-    image_url   = candidate.get("image_url") or product.get("image_url", "")
-    detail_imgs = candidate.get("detail_images", [])
-    code        = candidate.get("product_code", "")
-
-    # registry 등록 보장 — code가 있어도 assign_code 항상 호출 (pending에 코드만 있고 registry 미등록 방지)
-    from generator.registry import assign_code
-    registered_code = assign_code(
-        product.get("product_url", ""),
-        product.get("name", ""),
-        product.get("image_url", ""),
-    ) or ""
-    if not code:
-        code = registered_code
-        if code and "프로필 링크에서" not in post_text:
-            post_text += f"\n\n제품 정보는 프로필 링크에서 [{code}] 검색 👆"
-
-    # ── 이미지 보충: 원본 이미지 없으면 네이버 검색으로 확보 (010 메론 무사진 재발 방지)
-    if not image_url:
-        try:
-            from scraper.naver_shopping import fetch_image_by_name
-            image_url = fetch_image_by_name(product.get("name", ""))
-            if image_url:
-                product["image_url"] = image_url
-        except Exception as e:
-            logger.warning(f"이미지 보충 실패: {e}")
-
-    # ── 언어 게이트: 포스팅 직전 외국어 최종 차단 (012 한자 유출 재발 방지)
-    from generator.content import ensure_korean
-    post_text = ensure_korean(post_text, product, code)
-
-    # AI 이미지 생성 — 성공 시 교체, 실패 시 원본 유지
-    try:
-        from generator.image_gen import generate_and_upload_images
-        ai_imgs = generate_and_upload_images(product, post_text)
-        if ai_imgs:
-            detail_imgs = ai_imgs
-            # 원본 image_url 은 비우지 않고 carousel 전멸 시 폴백으로 사용 (013 무사진 재발 방지)
-            logger.info(f"AI 이미지 {len(ai_imgs)}장으로 교체")
+        # 2. 없으면 실시간 수집
+        if not candidate:
+            logger.info("[폴백] 실시간 수집 모드...")
+            candidate = await _collect_fallback()
         else:
-            logger.info("AI 이미지 생성 실패 → 원본 이미지 유지")
-    except Exception as e:
-        logger.warning(f"AI 이미지 생성 오류: {e}")
+            from_pending = True
 
-    logger.info(f"포스팅: {product.get('name', '')[:40]} [{code}]")
+        if not candidate:
+            logger.warning("포스팅할 상품 없음 — 이번 라운드 종료")
+            if post_idx == 0:
+                return  # 첫 번째도 못 찾으면 종료
+            else:
+                break  # 두 번째에서 실패하면 종료
 
-    # ── 멱등 가드: 동일 코드 게시글이 이미 Threads에 있으면 게시 생략, 기록만 복구
-    #    (크론 지연·동시 실행으로 인한 011/013 중복 게시 재발 방지의 2차 방어선)
-    result = None
-    if code:
-        from poster.threads import find_recent_post_by_marker
-        already = find_recent_post_by_marker(f"[{code}] 검색")
-        if already:
-            logger.warning(f"Threads에 [{code}] 게시글 이미 존재 → 중복 게시 차단, 기록만 복구")
-            result = already
+        # 3. 편집된 텍스트면 포스팅 전 AI 다듬기
+        if candidate.get("edited") and candidate.get("post_text"):
+            logger.info("편집된 텍스트 감지 → AI 다듬기 실행...")
+            try:
+                from generator.content import polish_post
+                polished = polish_post(candidate["post_text"], candidate.get("product", {}))
+                if polished:
+                    candidate["post_text"] = polished
+                    logger.info("  다듬기 완료")
+                else:
+                    logger.info("  다듬기 실패 → 편집본 그대로 사용")
+            except Exception as e:
+                logger.warning(f"  다듬기 오류: {e}")
 
-    if result is None:
+        # 4. 포스팅
+        from poster.threads import post_thread_api
+        from poster.comment_replier import add_recent_post, check_and_reply_comments
+        from poster.engager import run_engagement_session
+
+        product     = candidate["product"]
+        post_text   = candidate["post_text"]
+        image_url   = candidate.get("image_url") or product.get("image_url", "")
+        detail_imgs = candidate.get("detail_images", [])
+        code        = candidate.get("product_code", "")
+
+        # registry 등록 보장
+        from generator.registry import assign_code
+        registered_code = assign_code(
+            product.get("product_url", ""),
+            product.get("name", ""),
+            product.get("image_url", ""),
+        ) or ""
+        if not code:
+            code = registered_code
+            if code and "프로필 링크에서" not in post_text:
+                post_text += f"\n\n제품 정보는 프로필 링크에서 [{code}] 검색 👆"
+
+        # 이미지 보충
+        if not image_url:
+            try:
+                from scraper.naver_shopping import fetch_image_by_name
+                image_url = fetch_image_by_name(product.get("name", ""))
+                if image_url:
+                    product["image_url"] = image_url
+            except Exception as e:
+                logger.warning(f"이미지 보충 실패: {e}")
+
+        # 언어 게이트
+        from generator.content import ensure_korean
+        post_text = ensure_korean(post_text, product, code)
+
+        # AI 이미지 생성
         try:
-            result = post_thread_api(
-                post_text=post_text,
-                image_url="" if (detail_imgs and detail_imgs != [image_url]) else image_url,
-                detail_images=detail_imgs,
-                fallback_image_url=image_url,
-            )
+            from generator.image_gen import generate_and_upload_images
+            ai_imgs = generate_and_upload_images(product, post_text)
+            if ai_imgs:
+                detail_imgs = ai_imgs
+                logger.info(f"AI 이미지 {len(ai_imgs)}장으로 교체")
+            else:
+                logger.info("AI 이미지 생성 실패 → 원본 이미지 유지")
         except Exception as e:
-            logger.error(f"포스팅 실패: {e}")
-            result = None
+            logger.warning(f"AI 이미지 생성 오류: {e}")
 
-    post_url = result.get("post_url") if result else None
-    post_id  = result.get("post_id")  if result else None
-    status   = "posted" if result else "failed"
+        logger.info(f"포스팅: {product.get('name', '')[:40]} [{code}]")
 
-    # 4. posted_ids 업데이트
-    if result:
-        posted_ids = set(_load_json(POSTED_IDS_PATH, []))
-        key = _product_key(product)
-        if key:
-            posted_ids.add(key)
-        _save_json(POSTED_IDS_PATH, sorted(posted_ids))
-        # 페이지 노출용 posted 플래그
+        # 멱등 가드
+        result = None
         if code:
-            from generator.registry import mark_posted
-            from generator.content import generate_short_name
-            short_name = generate_short_name(product)
-            mark_posted(code, category=product.get("category_hint", ""), short_name=short_name)
-        # pending 후보를 사용했으면 used 처리 → preselect가 새 후보로 교체
-        if from_pending:
-            _mark_pending_used(product.get("product_url", ""))
+            from poster.threads import find_recent_post_by_marker
+            already = find_recent_post_by_marker(f"[{code}] 검색")
+            if already:
+                logger.warning(f"Threads에 [{code}] 게시글 이미 존재 → 중복 게시 차단, 기록만 복구")
+                result = already
 
-    # 5. feed_posts 업데이트
-    feed = _load_json(FEED_POSTS_PATH, [])
-    feed.insert(0, {
-        "timestamp":     datetime.now(KST).isoformat(),
-        "product_code":  code,
-        "product_name":  product.get("name", ""),
-        "product_image": product.get("image_url", ""),
-        "product_url":   product.get("product_url", ""),
-        "post_text":     post_text,
-        "threads_url":   post_url,
-        "status":        status,
-        "post_type":     "auto",
-    })
-    _save_json(FEED_POSTS_PATH, feed[:200])
+        if result is None:
+            try:
+                result = post_thread_api(
+                    post_text=post_text,
+                    image_url="" if (detail_imgs and detail_imgs != [image_url]) else image_url,
+                    detail_images=detail_imgs,
+                    fallback_image_url=image_url,
+                )
+            except Exception as e:
+                logger.error(f"포스팅 실패: {e}")
+                result = None
 
-    if post_url and post_id:
-        add_recent_post(post_url, post_id, "story", code)
+        post_url = result.get("post_url") if result else None
+        post_id  = result.get("post_id")  if result else None
+        status   = "posted" if result else "failed"
 
-    logger.info(f"포스팅 완료: {status} | {post_url or '(URL 없음)'}")
+        # posted_ids 업데이트
+        if result:
+            posted_ids = set(_load_json(POSTED_IDS_PATH, []))
+            key = _product_key(product)
+            if key:
+                posted_ids.add(key)
+            _save_json(POSTED_IDS_PATH, sorted(posted_ids))
+            if code:
+                from generator.registry import mark_posted
+                from generator.content import generate_short_name
+                short_name = generate_short_name(product)
+                mark_posted(code, category=product.get("category_hint", ""), short_name=short_name)
+            if from_pending:
+                _mark_pending_used(product.get("product_url", ""))
 
-    # 6. 댓글 대댓글
+        # feed_posts 업데이트
+        feed = _load_json(FEED_POSTS_PATH, [])
+        feed.insert(0, {
+            "timestamp":     datetime.now(KST).isoformat(),
+            "product_code":  code,
+            "product_name":  product.get("name", ""),
+            "product_image": product.get("image_url", ""),
+            "product_url":   product.get("product_url", ""),
+            "post_text":     post_text,
+            "threads_url":   post_url,
+            "status":        status,
+            "post_type":     "auto",
+        })
+        _save_json(FEED_POSTS_PATH, feed[:200])
+
+        if post_url and post_id:
+            add_recent_post(post_url, post_id, "story", code)
+
+        logger.info(f"포스팅 완료: {status} | {post_url or '(URL 없음)'}")
+
+    # 2개 포스팅 후 댓글/활동
     try:
         await check_and_reply_comments()
     except Exception as e:
         logger.error(f"대댓글 오류: {e}")
 
-    # 7. 타 계정 활동
     try:
         await run_engagement_session(max_comments=10)
     except Exception as e:
         logger.error(f"댓글 활동 오류: {e}")
 
-    # 8. 페이지 업데이트
+    # 페이지 업데이트
     try:
         import generate_page, generate_feed_page
         generate_page.main()
