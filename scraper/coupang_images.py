@@ -1,8 +1,12 @@
 """
-coupang_images.py  (신규 파일 — scraper/ 폴더에 추가)
+coupang_images.py
 쿠팡 상품 페이지에서 상세 이미지 3~4장 추출
 - 대표 썸네일이 아닌, 상세페이지 갤러리 이미지 사용
 - 감성/제품컷 위주로 수집해 Threads carousel에 사용
+
+주의: Coupang은 JavaScript로 이미지를 동적 로드하므로, requests + BeautifulSoup으로는
+gallery 이미지를 가져올 수 없음. og:image 폴백만 작동.
+실제 gallery 이미지를 원하면 Playwright/Selenium 필요 (GitHub Actions에서는 느림)
 """
 import re
 import time
@@ -12,15 +16,27 @@ from bs4 import BeautifulSoup
 
 logger = logging.getLogger(__name__)
 
-HEADERS = {
-    "User-Agent": (
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-        "AppleWebKit/537.36 (KHTML, like Gecko) "
-        "Chrome/124.0.0.0 Safari/537.36"
-    ),
-    "Accept-Language": "ko-KR,ko;q=0.9",
-    "Referer": "https://www.coupang.com/",
-}
+_USER_AGENTS = [
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36 Edg/127.0.0.0",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36",
+]
+
+def _get_headers():
+    import random
+    return {
+        "User-Agent": random.choice(_USER_AGENTS),
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+        "Accept-Language": "ko-KR,ko;q=0.9,en;q=0.8",
+        "Accept-Encoding": "gzip, deflate, br",
+        "DNT": "1",
+        "Connection": "keep-alive",
+        "Upgrade-Insecure-Requests": "1",
+        "Sec-Fetch-Dest": "document",
+        "Sec-Fetch-Mode": "navigate",
+        "Sec-Fetch-Site": "none",
+        "Cache-Control": "max-age=0",
+    }
 
 # 이미지 URL에서 제외할 패턴 (아이콘/배너/로고 등)
 _SKIP_PATTERNS = [
@@ -55,49 +71,66 @@ def fetch_product_images(product_url: str, max_images: int = 4) -> list[str]:
     if not final_url:
         return []
 
-    try:
-        time.sleep(1.5)  # 쿠팡 봇 감지 방지
-        resp = requests.get(final_url, headers=HEADERS, timeout=12)
-        if resp.status_code != 200:
-            logger.warning(f"쿠팡 페이지 {resp.status_code}: {final_url[:60]}")
-            return []
+    max_retries = 3
+    for attempt in range(max_retries):
+        try:
+            time.sleep(1.5)  # 쿠팡 봇 감지 방지
+            resp = requests.get(final_url, headers=_get_headers(), timeout=12)
 
-        soup = BeautifulSoup(resp.text, "html.parser")
-        images: list[str] = []
+            if resp.status_code == 403:
+                if attempt < max_retries - 1:
+                    logger.warning(f"403 차단 (시도 {attempt+1}/{max_retries}) → 재시도 중...")
+                    time.sleep(2)
+                    continue
+                else:
+                    logger.warning(f"쿠팡 페이지 접근 차단 (403): {final_url[:60]}")
+                    return []
 
-        # ── 방법 1: 상품 갤러리 썸네일 리스트 ───────────────────────────────
-        gallery = soup.select("ol.prod-img-list li img, ul.prod-img-list li img")
-        for img in gallery:
-            src = img.get("src") or img.get("data-src") or ""
-            src = _upgrade_image_url(src)
-            if src and _is_valid_image(src) and src not in images:
-                images.append(src)
-            if len(images) >= max_images:
-                break
+            if resp.status_code != 200:
+                logger.warning(f"쿠팡 페이지 {resp.status_code}: {final_url[:60]}")
+                return []
 
-        # ── 방법 2: JSON 내 imageList 파싱 ──────────────────────────────────
-        if len(images) < 2:
-            json_images = _extract_from_json(resp.text)
-            for url in json_images:
-                if url not in images:
-                    images.append(url)
+            soup = BeautifulSoup(resp.text, "html.parser")
+            images: list[str] = []
+
+            # ── 방법 1: 상품 갤러리 썸네일 리스트 ───────────────────────────────
+            gallery = soup.select("ol.prod-img-list li img, ul.prod-img-list li img")
+            for img in gallery:
+                src = img.get("src") or img.get("data-src") or ""
+                src = _upgrade_image_url(src)
+                if src and _is_valid_image(src) and src not in images:
+                    images.append(src)
                 if len(images) >= max_images:
                     break
 
-        # ── 방법 3: og:image 폴백 ────────────────────────────────────────────
-        if not images:
-            og = soup.find("meta", property="og:image")
-            if og and og.get("content"):
-                src = _upgrade_image_url(og["content"])
-                if src:
-                    images.append(src)
+            # ── 방법 2: JSON 내 imageList 파싱 ──────────────────────────────────
+            if len(images) < 2:
+                json_images = _extract_from_json(resp.text)
+                for url in json_images:
+                    if url not in images:
+                        images.append(url)
+                    if len(images) >= max_images:
+                        break
 
-        logger.info(f"이미지 {len(images)}장 수집 완료: {final_url[:50]}")
-        return images[:max_images]
+            # ── 방법 3: og:image 폴백 ────────────────────────────────────────────
+            if not images:
+                og = soup.find("meta", property="og:image")
+                if og and og.get("content"):
+                    src = _upgrade_image_url(og["content"])
+                    if src:
+                        images.append(src)
 
-    except Exception as e:
-        logger.warning(f"이미지 수집 오류: {e}")
-        return []
+            logger.info(f"이미지 {len(images)}장 수집 완료: {final_url[:50]}")
+            return images[:max_images]
+
+        except Exception as e:
+            if attempt < max_retries - 1:
+                logger.warning(f"이미지 수집 오류 (시도 {attempt+1}/{max_retries}): {e}")
+                time.sleep(2)
+                continue
+            else:
+                logger.warning(f"이미지 수집 최종 실패: {e}")
+                return []
 
 
 def _resolve_redirect(url: str) -> str | None:
