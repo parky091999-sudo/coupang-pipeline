@@ -43,7 +43,7 @@ def build_cards(products: list[dict]) -> str:
         name         = p.get("name", "")
         display_name = p.get("short_name") or name
         url          = p.get("url") or "#"
-        img          = p.get("image_url", "")
+        img          = p.get("threads_image_url") or p.get("image_url", "")
         category     = p.get("category", "")
 
         img_tag = (
@@ -77,7 +77,7 @@ def build_html(products: list[dict]) -> str:
                 "code":          p["code"],
                 "name":          p.get("short_name") or p.get("name", ""),
                 "url":           p.get("url", ""),
-                "image_url":     p.get("image_url", ""),
+                "image_url":     p.get("threads_image_url") or p.get("image_url", ""),
                 "category":      p.get("category", ""),
                 "registered_at": p.get("registered_at", ""),
             }
