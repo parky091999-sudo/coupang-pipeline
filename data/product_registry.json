@@ -1,5 +1,5 @@
 {
-  "next_code": 16,
+  "next_code": 17,
   "blocked_item_ids": [],
   "products": {
     "https://link.coupang.com/re/PCSNAVERPCSDP?pageKey=8849967732&ctag=8849967732&lpt": {
@@ -150,6 +150,16 @@
       "registered_at": "2026-06-11T02:45:32.934658+09:00",
       "posted": true,
       "short_name": "휴대용 의류건조기"
+    },
+    "https://link.coupang.com/re/PCSNAVERPCSDP?pageKey=9259122538&ctag=9259122538&lpt": {
+      "code": "016",
+      "name": "Misuko 자동 껍질 제거기 마늘 과일용 USB 충전  1개",
+      "url": "https://link.coupang.com/re/PCSNAVERPCSDP?pageKey=9259122538&ctag=9259122538&lptag=I27394439934&itemId=27394439934&vendorItemId=94549415028&spec=10305198",
+      "image_url": "https://shopping-phinf.pstatic.net/main_6033007/60330072885.jpg",
+      "category": "",
+      "registered_at": "2026-06-11T23:03:26.347204+09:00",
+      "posted": true,
+      "short_name": "자동 껍질 제거기"
     }
   }
 }
