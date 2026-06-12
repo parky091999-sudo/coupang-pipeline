@@ -15,7 +15,7 @@ from config import DATA_DIR, LOG_DIR, THREADS_ACCESS_TOKEN
 
 TRACKER_PATH = os.path.join(DATA_DIR, "last_casual_post.json")
 FEED_POSTS_PATH = os.path.join(DATA_DIR, "feed_posts.json")
-INTERVAL_DAYS = 3
+INTERVAL_DAYS = 1
 
 KST = timezone(timedelta(hours=9))
 

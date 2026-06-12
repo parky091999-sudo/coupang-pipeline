@@ -500,7 +500,7 @@ _GENERIC_TOKENS = {
 
 def _short_name_ok(result: str, name: str) -> bool:
     """short_name 검증: 너무 짧거나 일반 단어만이면 reject."""
-    if not result or len(result) > 30:
+    if not result or len(result) < 2 or len(result) > 30:
         return False
     tokens = result.split()
     # 한 단어인데 공간/카테고리 단어면 reject (예: "욕실", "주방")

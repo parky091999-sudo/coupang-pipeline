@@ -55,6 +55,14 @@ jobs:
           SKIP_DELAY:           ${{ github.event.inputs.skip_delay || 'false' }}
         run: python scripts/auto_post.py
 
+      - name: Integrity check (short_name·post_text 자동 수정)
+        env:
+          THREADS_ACCESS_TOKEN: ${{ secrets.THREADS_ACCESS_TOKEN }}
+          THREADS_USER_ID:      ${{ secrets.THREADS_USER_ID }}
+        run: |
+          python scripts/verify_posts.py; EXIT=$?
+          [ $EXIT -eq 0 ] || [ $EXIT -eq 2 ] || exit $EXIT
+
       - name: Refresh tomorrow candidates (preselect)
         env:
           NAVER_CLIENT_ID:      ${{ secrets.NAVER_CLIENT_ID }}

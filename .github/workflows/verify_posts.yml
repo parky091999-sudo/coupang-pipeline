@@ -9,6 +9,8 @@ env:
 jobs:
   verify:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -17,7 +19,21 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
       - name: Run verification
+        id: verify
         env:
           THREADS_ACCESS_TOKEN: ${{ secrets.THREADS_ACCESS_TOKEN }}
           THREADS_USER_ID:      ${{ secrets.THREADS_USER_ID }}
-        run: python scripts/verify_posts.py
+        run: |
+          python scripts/verify_posts.py; EXIT=$?
+          echo "exit_code=$EXIT" >> $GITHUB_OUTPUT
+          # exit 2 = registry 수정됨, exit 0 = 이상 없음, 그 외 = 오류
+          [ $EXIT -eq 0 ] || [ $EXIT -eq 2 ] || exit $EXIT
+      - name: Commit integrity fixes
+        if: steps.verify.outputs.exit_code == '2'
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/product_registry.json
+          git diff --staged --quiet || git commit -m "fix: 포스팅 무결성 자동 수정 $(date -u +%Y-%m-%d)"
+          git pull --rebase -X theirs origin main
+          git push || (git pull --rebase -X theirs origin main && git push)
