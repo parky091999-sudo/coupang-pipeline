@@ -3,25 +3,6 @@
   "candidates": [
     {
       "product": {
-        "name": "닥터베크만 세탁조 액상 클리너 컴플리트케어 오션브리즈",
-        "price": "21,280원",
-        "original_price": "",
-        "discount_rate": 0,
-        "image_url": "https://shopping-phinf.pstatic.net/main_5529149/55291493506.59.jpg",
-        "product_url": "https://link.coupang.com/re/PCSNAVERPCSDP?pageKey=6771300452&ctag=6771300452&lptag=l288260265771&itemId=08272617685&vendorItemId=74155114391&spec=10305198",
-        "badge": "쿠팡",
-        "brand": "",
-        "category": "세제/세정제",
-        "category_hint": "생활/청소",
-        "mall_name": "쿠팡",
-        "source": "naver_shopping",
-        "scraped_at": "2026-06-11T15:20:50.970368"
-      },
-      "source_account": "검색:세탁조클리너",
-      "selected": false
-    },
-    {
-      "product": {
         "name": "휴대용 빨래건조기 UV살균 접이식 미니 건조기 스타일러 002S 002S",
         "price": "27,000원",
         "original_price": "",
