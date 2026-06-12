@@ -184,10 +184,10 @@ _HASHTAG_POOLS = {
 def _infer_category_kr(name: str) -> str:
     n = (name or "").lower()
     if re.search(r"메론|멜론|과일|고기|한우|삼겹|식품|간식|과자|젤리|견과|쌀|김치|반찬|즉석|밀키트|음료|주스|원두|해산물|생선|간재미|오징어|새우|소스|양념|육포|빵|떡", n): return "먹는거"
-    if re.search(r"크림|샴푸|마스크팩|세럼|클렌징|선크림|화장|뷰티|미스트|로션|에센스", n): return "뷰티"
-    if re.search(r"냄비|프라이팬|후라이팬|그라인더|믹서|에어프라이어|주방|식기|텀블러|보관용기|도마|커피머신|컵", n): return "주방"
-    if re.search(r"청소|세제|수납|정리|건조기|빨래|욕실|화장지|물티슈|방향제|탈취|살림|스팀", n): return "생활"
-    if re.search(r"충전|케이블|이어폰|스피커|보조배터리|마우스|키보드|모니터|공기청정|선풍기|가습|히터|드라이기|led|전동|무선|손풍기", n): return "디지털/가전"
+    if re.search(r"크림|샴푸|마스크팩|세럼|클렌징|선크림|화장|뷰티|미스트|로션|에센스|두피|스케일러|헤어|앰플|토너|패드", n): return "뷰티"
+    if re.search(r"냄비|프라이팬|후라이팬|그라인더|믹서|에어프라이어|주방|식기|텀블러|보관용기|도마|커피머신|컵|믹싱볼|탈수기|밀폐용기|조리도구", n): return "주방"
+    if re.search(r"청소|세제|수납|정리|건조기|건조대|빨래|욕실|선반|화장지|물티슈|방향제|탈취|살림|스팀|곰팡이|세탁조|배수구", n): return "생활"
+    if re.search(r"충전|케이블|이어폰|스피커|보조배터리|마우스|키보드|모니터|공기청정|선풍기|가습|히터|드라이기|led|전동|무선|손풍기|제습기", n): return "디지털/가전"
     if re.search(r"조명|무드등|쿠션|커튼|러그|액자|인테리어|디퓨저|캔들|화분", n): return "인테리어"
     return "기타"
 
@@ -492,6 +492,37 @@ def polish_post(text: str, product: dict) -> str | None:
         return None
 
 
+_GENERIC_TOKENS = {
+    "욕실", "주방", "거실", "방", "침실", "사무실", "차량",  # 공간 단어만
+    "용품", "제품", "상품", "기기", "도구", "세트",          # 일반 카테고리
+}
+
+
+def _short_name_ok(result: str, name: str) -> bool:
+    """short_name 검증: 너무 짧거나 일반 단어만이면 reject."""
+    if not result or len(result) > 30:
+        return False
+    tokens = result.split()
+    # 한 단어인데 공간/카테고리 단어면 reject (예: "욕실", "주방")
+    if len(tokens) == 1 and tokens[0] in _GENERIC_TOKENS:
+        return False
+    # 원본 상품명에 한 글자도 안 겹치면 reject (AI 환각)
+    if not any(t in name for t in tokens):
+        return False
+    return True
+
+
+def _fallback_short_name(name: str) -> str:
+    """AI 실패 시 규칙 기반 폴백: 처음 2~3 의미 단어."""
+    import re
+    # 괄호/특수문자 제거, 토큰화
+    cleaned = re.sub(r"[\(\)\[\]\{\}/\\,~·]", " ", name or "")
+    tokens = [t for t in cleaned.split() if t and not re.match(r"^[A-Z0-9\-]+\d", t)]
+    # 모델번호/숫자만 토큰 제외
+    tokens = [t for t in tokens if not re.fullmatch(r"\d+[가-힣]?", t)]
+    return " ".join(tokens[:3])[:30]
+
+
 def generate_short_name(product: dict) -> str:
     """쿠팡 상품 전체명 → 2~4단어 간결한 표시 이름 (페이지 카드 제목용)"""
     name = product.get("name", "")
@@ -500,9 +531,11 @@ def generate_short_name(product: dict) -> str:
     prompt = (
         "다음 쿠팡 상품명을 2~4단어의 간결한 한국어 표시 이름으로 줄여줘.\n"
         "브랜드명·모델번호·용량·색상·개수 등 부가정보는 제거하고 핵심 품목명만 남겨.\n"
+        "중요: '욕실'/'주방'/'거실' 같은 공간 단어 하나만 응답하면 안 됨. 반드시 핵심 품목어(예: 선반/청소기/그라인더)를 포함해야 함.\n"
         "예시: \"쿠쿠 식기세척기 6인용 CDW-A0611TW 방문설치\" → \"6인용 식기세척기\"\n"
         "예시: \"산리오 헬로키티 미니 물 정수기 디스펜서 2L 핑크\" → \"헬로키티 정수기 디스펜서\"\n"
-        "예시: \"데코아르 스마트 자동센서 스테인레스 휴지통 (20L 전용)\" → \"스마트 휴지통(20L)\"\n\n"
+        "예시: \"데코아르 스마트 자동센서 스테인레스 휴지통 (20L 전용)\" → \"스마트 휴지통(20L)\"\n"
+        "예시: \"스텐 무타공 욕실선반 물빠짐 부착식 삼각 코너선반 화이트 N21\" → \"무타공 욕실선반\"\n\n"
         f"상품명: {name}\n\n"
         "간결한 이름만 출력 (설명 없이):"
     )
@@ -519,8 +552,9 @@ def generate_short_name(product: dict) -> str:
                 },
             )
             result = (resp.text or "").strip().strip("\"'")
-            if result and len(result) <= 30:
+            if _short_name_ok(result, name):
                 return result
+            logger.warning(f"generate_short_name Gemini 거절: {result!r} (원본: {name[:30]})")
         except Exception as e:
             logger.warning(f"generate_short_name Gemini 실패: {e}")
     if GROQ_API_KEY:
@@ -536,11 +570,15 @@ def generate_short_name(product: dict) -> str:
                 temperature=0.2,
             )
             result = resp.choices[0].message.content.strip().strip("\"'")
-            if result and len(result) <= 30:
+            if _short_name_ok(result, name):
                 return result
+            logger.warning(f"generate_short_name Groq 거절: {result!r} (원본: {name[:30]})")
         except Exception as e:
             logger.warning(f"generate_short_name Groq 실패: {e}")
-    return ""
+    # 최종 폴백: 규칙 기반 추출
+    fb = _fallback_short_name(name)
+    logger.info(f"generate_short_name 폴백 사용: {fb!r}")
+    return fb
 
 
 def generate_posts_batch(products: list[dict]) -> list[dict]:

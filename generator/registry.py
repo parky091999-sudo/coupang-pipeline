@@ -86,13 +86,24 @@ def assign_code(product_url: str, name: str = "", image_url: str = "", category:
 
 
 def mark_posted(code: str, category: str = "", short_name: str = ""):
-    """포스팅 성공 시 호출 — 해당 코드 상품을 posted=True 로 표시"""
+    """포스팅 성공 시 호출 — 해당 코드 상품을 posted=True 로 표시.
+    category가 비어 있으면 상품명에서 자동 추론(_infer_category_kr 사용)."""
     reg = _load()
     for v in reg["products"].values():
         if v["code"] == code:
             v["posted"] = True
-            if category and not v.get("category"):
-                v["category"] = category
+            # category 폴백: 호출부에서 빈 값이면 상품명 기반 자동 추론
+            effective_cat = category
+            if not effective_cat:
+                try:
+                    from generator.content import _infer_category_kr
+                    inferred = _infer_category_kr(v.get("name", ""))
+                    if inferred and inferred != "기타":
+                        effective_cat = inferred
+                except Exception:
+                    pass
+            if effective_cat and not v.get("category"):
+                v["category"] = effective_cat
             if short_name and not v.get("short_name"):
                 v["short_name"] = short_name
             if not v.get("registered_at"):
