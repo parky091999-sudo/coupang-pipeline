@@ -37,13 +37,32 @@ def _status_badge(status: str) -> str:
     return '<span class="status generated">생성됨</span>'
 
 
+def _load_removed_codes() -> set[str]:
+    """registry에서 removed=True 표시된 product_code 집합 반환."""
+    reg_path = os.path.join(os.path.dirname(__file__), "data", "product_registry.json")
+    if not os.path.exists(reg_path):
+        return set()
+    try:
+        reg = json.load(open(reg_path, encoding="utf-8"))
+        return {
+            (p.get("code") or "").zfill(3)
+            for p in reg.get("products", {}).values()
+            if p.get("removed") and p.get("code")
+        }
+    except Exception:
+        return set()
+
+
 def build_cards(posts: list[dict]) -> str:
     if not posts:
         return '<div class="empty">아직 게시된 포스팅이 없습니다<br><span class="empty-sub">파이프라인이 실행되면 여기에 표시됩니다</span></div>'
 
+    removed = _load_removed_codes()
     html = ""
     for p in posts:
         code     = p.get("product_code", "?")
+        if code in removed:
+            continue
         name     = p.get("product_name", "")
         img      = p.get("product_image", "")
         url      = p.get("product_url", "#")
