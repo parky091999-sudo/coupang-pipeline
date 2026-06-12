@@ -1,5 +1,5 @@
 {
-  "next_code": 19,
+  "next_code": 20,
   "blocked_item_ids": [],
   "products": {
     "https://link.coupang.com/re/PCSNAVERPCSDP?pageKey=8849967732&ctag=8849967732&lpt": {
@@ -181,6 +181,14 @@
       "registered_at": "2026-06-12T20:26:07.324183+09:00",
       "posted": true,
       "short_name": "우베 크런치롤"
+    },
+    "https://link.coupang.com/re/PCSNAVERPCSDP?pageKey=9582452222&ctag=9582452222&lpt": {
+      "code": "019",
+      "name": "리드볼트 오딧 캐리어 24인치  04_(6/15 출고)펄스레드",
+      "url": "https://link.coupang.com/re/PCSNAVERPCSDP?pageKey=9582452222&ctag=9582452222&lptag=P9582452222&itemId=28604157900&vendorItemId=95547714199&spec=10305199",
+      "image_url": "https://shopping-phinf.pstatic.net/main_6029017/60290171407.jpg",
+      "category": "",
+      "registered_at": "2026-06-12T21:22:11.233446+09:00"
     }
   }
 }
