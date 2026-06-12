@@ -16,6 +16,7 @@ sys.path.insert(0, ROOT)
 from config import DATA_DIR, LOG_DIR, MAX_PRODUCTS_PER_RUN, YOUTUBE_API_KEY, NAVER_CLIENT_ID
 
 PENDING_PATH    = os.path.join(DATA_DIR, "pending_post.json")
+QUEUE_PATH      = os.path.join(DATA_DIR, "manual_queue.json")
 POSTED_IDS_PATH = os.path.join(DATA_DIR, "posted_ids.json")
 FEED_POSTS_PATH = os.path.join(DATA_DIR, "feed_posts.json")
 
@@ -184,12 +185,25 @@ async def run():
 
     # 1. pending_post.json 에서 후보 선택
     from_pending = False
+    from_queue = False
     candidate = _pick_from_pending()
 
-    # 2. 없으면 실시간 수집
+    # 2. 없으면 manual_queue 사용 (큐 있으면 폴백보다 우선 — 검증된 본문/이미지)
+    if not candidate:
+        queue = _load_json(QUEUE_PATH, [])
+        if queue:
+            cand = queue[0]
+            cand.setdefault("status", "pending")
+            candidate = cand
+            from_queue = True
+            logger.info(f"[큐 사용] {cand.get('product',{}).get('name','')[:40]}")
+
+    # 3. 없으면 실시간 수집
     if not candidate:
         logger.info("[폴백] 실시간 수집 모드...")
         candidate = await _collect_fallback()
+    elif from_queue:
+        pass
     else:
         from_pending = True
 
@@ -302,6 +316,11 @@ async def run():
             mark_posted(code, category=product.get("category_hint", ""), short_name=short_name)
         if from_pending:
             _mark_pending_used(product.get("product_url", ""))
+        if from_queue:
+            q = _load_json(QUEUE_PATH, [])
+            if q:
+                q.pop(0)
+                _save_json(QUEUE_PATH, q)
 
     # feed_posts 업데이트
     feed = _load_json(FEED_POSTS_PATH, [])
