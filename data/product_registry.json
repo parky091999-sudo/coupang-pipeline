@@ -1,5 +1,5 @@
 {
-  "next_code": 21,
+  "next_code": 22,
   "blocked_item_ids": [],
   "products": {
     "https://link.coupang.com/re/PCSNAVERPCSDP?pageKey=8849967732&ctag=8849967732&lpt": {
@@ -199,7 +199,17 @@
       "category": "생활",
       "registered_at": "2026-06-13T11:31:42.408837+09:00",
       "posted": true,
-      "short_name": "6인용 식기세척기"
+      "short_name": "6인"
+    },
+    "https://link.coupang.com/a/exBjt9szPo?abTestInfo=100412_group_A": {
+      "code": "021",
+      "name": "실리콘 국자거치대",
+      "url": "https://link.coupang.com/a/exBjt9szPo?abTestInfo=100412_group_A",
+      "image_url": "",
+      "category": "",
+      "registered_at": "2026-06-13T19:04:02.597355+09:00",
+      "posted": true,
+      "short_name": "국자거치대"
     }
   }
 }
