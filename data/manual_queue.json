@@ -72,5 +72,29 @@
     "source_account": "검색:휴대용 의류건조기",
     "added_at": "2026-06-13T17:17:53.833Z",
     "edited": false
+  },
+  {
+    "product": {
+      "name": "올레놀샷 NMN 1개 15ml",
+      "price": "31,510원",
+      "original_price": "",
+      "discount_rate": 0,
+      "image_url": "https://shopping-phinf.pstatic.net/main_5760148/57601483053.106.jpg",
+      "product_url": "https://link.coupang.com/re/PCSNAVERPCSDP?pageKey=9164207296&ctag=9164207296&lptag=I26998880761&itemId=26998880761&vendorItemId=95113971937&spec=10305199",
+      "badge": "쿠팡",
+      "brand": "",
+      "category": "에센스/세럼/앰플",
+      "category_hint": "뷰티",
+      "mall_name": "쿠팡",
+      "source": "naver_shopping",
+      "scraped_at": "2026-06-11T15:21:16.382864"
+    },
+    "image_url": "https://shopping-phinf.pstatic.net/main_5760148/57601483053.106.jpg",
+    "detail_images": [],
+    "post_text": "",
+    "product_code": "preview",
+    "source_account": "검색:미백 앰플",
+    "added_at": "2026-06-13T17:18:05.470Z",
+    "edited": false
   }
 ]
