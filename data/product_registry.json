@@ -1,5 +1,5 @@
 {
-  "next_code": 24,
+  "next_code": 25,
   "blocked_item_ids": [],
   "products": {
     "https://link.coupang.com/re/PCSNAVERPCSDP?pageKey=8849967732&ctag=8849967732&lpt": {
@@ -231,6 +231,16 @@
       "registered_at": "2026-06-14T19:17:20.241955+09:00",
       "posted": true,
       "short_name": "믹싱볼 야채"
+    },
+    "https://link.coupang.com/re/PCSNAVERPCSDP?pageKey=6771300452&ctag=6771300452&lpt": {
+      "code": "024",
+      "name": "닥터베크만 세탁조 액상 클리너 컴플리트케어 오션브리즈",
+      "url": "https://link.coupang.com/re/PCSNAVERPCSDP?pageKey=6771300452&ctag=6771300452&lptag=l288260265771&itemId=08272617685&vendorItemId=74155114391&spec=10305198",
+      "image_url": "https://shopping-phinf.pstatic.net/main_5529149/55291493506.59.jpg",
+      "category": "생활/청소",
+      "registered_at": "2026-06-14T20:43:05.513593+09:00",
+      "posted": true,
+      "short_name": "세탁조 액상"
     }
   }
 }
