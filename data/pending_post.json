@@ -1,85 +1,7 @@
 {
-  "for_date": "2026-06-15",
-  "generated_at": "2026-06-14T13:49:54.132663+09:00",
+  "for_date": "2026-06-16",
+  "generated_at": "2026-06-15T01:02:17.430559+09:00",
   "candidates": [
-    {
-      "product": {
-        "name": "아이룸 전동 무선 발각질 제거기  1개",
-        "price": "47,000원",
-        "original_price": "",
-        "discount_rate": 0,
-        "image_url": "https://shopping-phinf.pstatic.net/main_4357320/43573201797.8.jpg",
-        "product_url": "https://link.coupang.com/re/PCSNAVERPCSDP?pageKey=7598213797&ctag=7598213797&lptag=I20093246513&itemId=20093246513&vendorItemId=87540093727&spec=10305198",
-        "badge": "쿠팡",
-        "brand": "아이룸",
-        "category": "발각질제거기",
-        "category_hint": "건강",
-        "mall_name": "쿠팡",
-        "source": "naver_shopping",
-        "scraped_at": "2026-06-13T15:53:36.375349"
-      },
-      "post_text": "어느 순간부터 내 발바닥이 사포처럼 변해있던 거 아는 사람? 💭 겨울엔 건조하고 여름엔 샌들 신느라 발 뒤꿈치 각질이랑 굳은살이 말썽이잖아. 집에서 발 관리하는 거 솔직히 힘들고 귀찮아서 포기했던 사람 많을 거야. 특히 발 뒤꿈치",
-      "image_url": "https://shopping-phinf.pstatic.net/main_4357320/43573201797.8.jpg",
-      "detail_images": [
-        "https://shopping-phinf.pstatic.net/main_4357320/43573201797.8.jpg"
-      ],
-      "product_code": "",
-      "status": "pending"
-    },
-    {
-      "product": {
-        "name": "냉티슈 바르는데오퍼퓸 땀닦는물티슈 쿨링티슈 쿨링바디티슈 2개 10g",
-        "price": "15,400원",
-        "original_price": "",
-        "discount_rate": 0,
-        "image_url": "https://shopping-phinf.pstatic.net/main_5631352/56313524238.jpg",
-        "product_url": "https://link.coupang.com/re/PCSNAVERPCSDP?pageKey=8989891169&ctag=8989891169&lptag=I26331876104&itemId=26331876104&vendorItemId=93309122773&spec=10305199",
-        "badge": "쿠팡",
-        "brand": "",
-        "category": "데오드란트",
-        "category_hint": "생활",
-        "mall_name": "쿠팡",
-        "source": "naver_shopping",
-        "scraped_at": "2026-06-13T15:52:37.996007",
-        "youtube_source": {
-          "title": "올여름 삶의 질이 달라집니다! 다이소 추천 여름 필수템 7가지",
-          "video_id": "5ai0rfg_djk",
-          "views": 113030,
-          "keyword": "생활꿀템 추천"
-        }
-      },
-      "post_text": "지하철에서 땀 뻘뻘 흘리다 내렸는데 갑자기 약속이 잡혔을 때, 어떻게 해야 할지 막막했던 적 다들 있을 걸? 🥵\n\n몸은 끈적이고 찝찝한데 그렇다고 바로 샤워할 수도 없고, 향수 뿌리자니 땀 냄새랑 섞일까 봐 걱정되는 그런 순간 말이야. 나도 진짜 이럴 때마다 스트레스였거든.",
-      "image_url": "https://shopping-phinf.pstatic.net/main_5631352/56313524238.jpg",
-      "detail_images": [
-        "https://shopping-phinf.pstatic.net/main_5631352/56313524238.jpg"
-      ],
-      "product_code": "",
-      "status": "pending"
-    },
-    {
-      "product": {
-        "name": "주방 휴지통 자동센서 스텐 쓰레기통",
-        "price": "132,400원",
-        "original_price": "",
-        "discount_rate": 0,
-        "image_url": "https://shopping-phinf.pstatic.net/main_5368600/53686005806.1.jpg",
-        "product_url": "https://link.coupang.com/re/PCSNAVERPCSDP?pageKey=8543853726&ctag=8543853726&lptag=I25110074495&itemId=25110074495&vendorItemId=94538325663&spec=10305199",
-        "badge": "쿠팡",
-        "brand": "",
-        "category": "휴지통",
-        "category_hint": "주방",
-        "mall_name": "쿠팡",
-        "source": "naver_shopping",
-        "scraped_at": "2026-06-13T21:39:38.639785"
-      },
-      "post_text": "아니, 진짜! 음식물 쓰레기 버릴 때마다 뚜껑 손으로 여는 거 짜증 나지 않아? 😠\n특히 요리하거나 배달 음식 먹고 나서 잔반 처리할 때 손에 뭐 묻은 채로 휴지통 뚜껑 만지기 진짜 찝찝했거든.\n근데 이건 손 댈 필요 없이 센서로 알아서 뚜껑이 열렸다 닫혔다 하더라. 쓱- 지나가면 열리고, 시간",
-      "image_url": "https://shopping-phinf.pstatic.net/main_5368600/53686005806.1.jpg",
-      "detail_images": [
-        "https://shopping-phinf.pstatic.net/main_5368600/53686005806.1.jpg"
-      ],
-      "product_code": "",
-      "status": "pending"
-    },
     {
       "product": {
         "name": "페이스팩토리 전동 다이아필 각질제거기 화이트 FF-27",
@@ -94,71 +16,93 @@
         "category_hint": "건강",
         "mall_name": "쿠팡",
         "source": "naver_shopping",
-        "scraped_at": "2026-06-13T15:53:36.375611"
+        "scraped_at": "2026-06-14T16:00:40.789242"
       },
-      "post_text": "아무리 비싼 화장품 발라도 흡수가 잘 안 되는 느낌 들 때 있더라? 💭\n피부 각질 쌓여서 푸석하고 화장도 맨날 뜨는 것 같고... 거울 볼 때마다 한숨 나오는 사람들한테 진짜 필요한 물건이더라고.\n이게 그냥 스크럽이 아니라 전기로 움직이면서 피부 겉 각질을 부드럽게 싹 정리해주는 방식이래. 다이아몬드 필링 기술 쓴 거라 그런지 자극은 적으면서 속은 엄청 매끈해지더라.\n후기들 보니까 이걸로 관리하고 나서 피부가 아기 피부처럼 부드러워졌다는 말 진짜 많았어.\n\n✔ 각질 제거하고 싶은 날, 세안 후 물기 없는 피부에 가볍게 밀어주면 되고, 너무 자주 말고 주 1회 정도가 딱 좋았음.\n✔ 쓰고 나면 피부가 매끈해져서 다음날 화장이 진짜 찰떡같이 잘 먹는 거 알게 될 거야!\n\n#피부관리 #홈케어 #뷰티템 #전자기기 #내돈내산",
+      "post_text": "화장 잘 먹는다고 해도 코 옆에 각질 뜬 거 보면 한숨만 나오지 않았음? 😮‍💨 특히 건조한 날에는 화장하면 코 옆이나 턱에 하얗게 뜨고, 스크럽은 피부에 너무 자극적이라 고민이었거든. 피부과 가자니 시간 없고, 집에서 매일 관리",
       "image_url": "https://shopping-phinf.pstatic.net/main_5027322/50273223171.12.jpg",
       "detail_images": [
         "https://shopping-phinf.pstatic.net/main_5027322/50273223171.12.jpg"
-      ],
-      "product_code": "",
-      "status": "approved",
-      "edited": false
-    },
-    {
-      "product": {
-        "name": "씨즌M닷컴 카카오프렌즈 휴대용 UV살균 칫솔케이스 라이언 RYAN 라이언001",
-        "price": "27,900원",
-        "original_price": "",
-        "discount_rate": 0,
-        "image_url": "https://shopping-phinf.pstatic.net/main_2386835/23868356238.jpg",
-        "product_url": "https://link.coupang.com/re/PCSNAVERPCSDP?pageKey=1501239636&ctag=1501239636&lptag=P1501239636&itemId=2577588578&vendorItemId=70569850445&spec=10305199",
-        "badge": "쿠팡",
-        "brand": "",
-        "category": "구강청정기",
-        "category_hint": "생활",
-        "mall_name": "쿠팡",
-        "source": "naver_shopping",
-        "scraped_at": "2026-06-13T15:53:27.736936"
-      },
-      "post_text": "매일 입에 넣는 칫솔, 그냥 컵에 꽂아두고 쓰는 사람 많을 거야. 🙈 나도 그랬거든. 근데 칫솔은 습하고 어두워서 세균 번식하기 진짜 딱 좋은 환경이래. 특히 여행 갈 때나 회사에서 점심 먹고 양치할 때 진짜 찝찝했음.",
-      "image_url": "https://shopping-phinf.pstatic.net/main_2386835/23868356238.jpg",
-      "detail_images": [
-        "https://shopping-phinf.pstatic.net/main_2386835/23868356238.jpg"
       ],
       "product_code": "",
       "status": "pending"
     },
     {
       "product": {
-        "name": "Apple 정품 매직 키보드 iPad Air(M4 모델)용",
-        "price": "389,670원",
+        "name": "달팽이리빙 퀴진드마망 라귀올 커트러리 4인 수저 세트",
+        "price": "23,500원",
         "original_price": "",
         "discount_rate": 0,
-        "image_url": "https://shopping-phinf.pstatic.net/main_5976656/59766567069.jpg",
-        "product_url": "https://link.coupang.com/re/PCSNAVERPCSDP?pageKey=6582369148&ctag=6582369148&lptag=l326752325009&itemId=55220376309&vendorItemId=92061519627&spec=10305197",
+        "image_url": "https://shopping-phinf.pstatic.net/main_5896183/58961836239.jpg",
+        "product_url": "https://link.coupang.com/re/PCSNAVERPCSDP?pageKey=2470208932&ctag=2470208932&lptag=l818810212230&itemId=81113088220&vendorItemId=85462963535&spec=10305197",
         "badge": "쿠팡",
         "brand": "",
-        "category": "케이스/파우치",
+        "category": "식기",
         "category_hint": "생활",
         "mall_name": "쿠팡",
         "source": "naver_shopping",
-        "scraped_at": "2026-06-13T21:39:25.173897",
+        "scraped_at": "2026-06-14T15:59:41.010875",
         "youtube_source": {
-          "title": "🔥 요즘 인스타에서 난리 난 투명 투명한 &#39;아이패드 RGB 키보드 케이스&#39;",
-          "video_id": "NgGe7otHVY4",
-          "views": 1526,
-          "keyword": "요즘 핫한 생활용품"
+          "title": "🪴추천하고 싶은 3가지 살림템 👍오늘은 남편이 요리사 🧑‍🍳 양파 그라탕🧅아보카도 자몽샐러드🥑",
+          "video_id": "7AMTbX0gtHI",
+          "views": 18168,
+          "keyword": "주방 가전 추천"
         }
       },
-      "post_text": "아이패드 샀는데 맨날 넷플릭스 머신으로 쓰고 있는 사람 나뿐이야? 😂\n솔직히 아이패드로 진짜 '일'을 하려고 하면 뭔가 2% 부족한 느낌 들 때 있잖아. 가벼워서 좋은데 막상 문서 작업이나 리포트 쓸 때 아쉬움이 남더라고.\n근데 이거 딱 붙이는 순간 그냥 노트북 쓰는 것처럼 바뀌어버림. 키보드감도 쫀득해서 장문 타이핑하기 진짜 편하고, 트랙패드 덕분에 마우스 없이도 섬세한 작업이 가능하더라고.\n나도 살까 말까 엄청 고민하다가 후기 찾아봤는데, 다들 '진작 살 걸 그랬다'고 그러더라. 나도 써보니 왜 그랬는지 바로 이해했음!\n\n✔️ 카페나 도서관에서 노트북 들고 가기 귀찮을 때, 아이패드랑 이것만 챙겨가도 충분하더라. 가벼운데 작업 효율은 확 올라감!\n\n#자취템 #필수템 #아이패드악세서리 #업무효율 #내돈내산",
-      "image_url": "https://shopping-phinf.pstatic.net/main_5976656/59766567069.jpg",
+      "post_text": "아니, 집밥도 분위기가 반이라며? 🍽️\n\n혼자 먹든 친구랑 먹든 대충 먹는 거 싫어하는 사람한테 이거 완전 딱임. 매일 먹는 밥도 예쁘게 먹고 싶을 때 있잖아. 솔직히 커트러리 하나만 바꿔도 식사 분위기가 확 달라지는 거 모르는 사람 없잖아!\n\n이 커트러리 세트가 진짜 예쁜데, 손에 잡았을 때 무게감이 적당하고 재질도 고급스러워서 그냥 식탁에 두는 것만으로도 분위기가 확 살아나더라고. 특히 칼질할 때도 부드럽게 잘 잘리고 포크도 뾰족해서 과일 찍어 먹기에도 편했음.\n\n써본 사람들 다들 '이 가격에 이 퀄리티는 반칙이다'라고 극찬하는 거 봤어.\n\n✔ 집에 손님 초대했을 때 꺼내면 다들 '어머, 이거 어디 거냐'고 꼭 물어보더라.\n✔ 심지어 그냥 라면 먹을 때도 괜히 이거 쓰면 더 맛있게 느껴지는 마법을 경험할 수 있음! 😉\n\n#살림꿀템 #자취템 #필수템 #테이블웨어 #홈카페놀이",
+      "image_url": "https://shopping-phinf.pstatic.net/main_5896183/58961836239.jpg",
       "detail_images": [
-        "https://shopping-phinf.pstatic.net/main_5976656/59766567069.jpg"
+        "https://shopping-phinf.pstatic.net/main_5896183/58961836239.jpg"
       ],
       "product_code": "",
-      "status": "approved",
-      "edited": false
+      "status": "pending"
+    },
+    {
+      "product": {
+        "name": "아이룸 전동 무선 발각질 제거기  1개",
+        "price": "47,000원",
+        "original_price": "",
+        "discount_rate": 0,
+        "image_url": "https://shopping-phinf.pstatic.net/main_4357320/43573201797.8.jpg",
+        "product_url": "https://link.coupang.com/re/PCSNAVERPCSDP?pageKey=7598213797&ctag=7598213797&lptag=I20093246513&itemId=20093246513&vendorItemId=87540093727&spec=10305198",
+        "badge": "쿠팡",
+        "brand": "아이룸",
+        "category": "발각질제거기",
+        "category_hint": "건강",
+        "mall_name": "쿠팡",
+        "source": "naver_shopping",
+        "scraped_at": "2026-06-14T16:00:40.789370"
+      },
+      "post_text": "거친 발뒤꿈치 때문에 침구에 자꾸 걸려서 신경 쓰인 적 있는 사람이라면, 이거 진짜 강추. 🦶\n여름엔 샌들 신어야 하는데, 건조하고 거친 발뒤꿈치나 굳은살 때문에 스트레스받는 사람 진짜 많잖아. 손으로 벅벅 문지르거나 칼로 밀면 괜히",
+      "image_url": "https://shopping-phinf.pstatic.net/main_4357320/43573201797.8.jpg",
+      "detail_images": [
+        "https://shopping-phinf.pstatic.net/main_4357320/43573201797.8.jpg"
+      ],
+      "product_code": "",
+      "status": "pending"
+    },
+    {
+      "product": {
+        "name": "프로쉬 라벤더 욕실 클리너 500ml 3개",
+        "price": "25,770원",
+        "original_price": "",
+        "discount_rate": 0,
+        "image_url": "https://shopping-phinf.pstatic.net/main_6024294/60242948115.jpg",
+        "product_url": "https://link.coupang.com/re/PCSNAVERPCSDP?pageKey=9265055430&ctag=9265055430&lptag=I27635748930&itemId=27635748930&vendorItemId=94598498940&spec=10305197",
+        "badge": "쿠팡",
+        "brand": "프로쉬",
+        "category": "세제/세정제",
+        "category_hint": "생활",
+        "mall_name": "쿠팡",
+        "source": "naver_shopping",
+        "scraped_at": "2026-06-14T16:00:20.280648"
+      },
+      "post_text": "욕실 청소할 때마다 락스 냄새에 눈물 콧물 다 빼던 사람, 여기 주목! 😥\n나처럼 독한 냄새에 예민하거나, 화장실 청소를 좀 더 쉽고 기분 좋게 하고 싶은 사람들한테 딱임.\n이거 라벤더 향이라서 독한 냄새 없이 욕실 전체가 은은하게 향기로워지는 거 알았어? 게다가 식물 유래 성분이라 맨손으로 슥슥 닦아도 손에 부담이 없더라고. 물때랑 비눗자국도 진짜 잘 지워지는 걸 내가 직접 확인했음.\n리뷰 보니까 다들 이거 쓰고 나서 화장실 청소 스트레스 확 줄었다고 하더라.\n✔ 샤워하고 나서 물기 있을 때 칙칙 뿌려놓고 10분 정도 뒤에 물로 헹궈내면 찌든 때도 잘 불어 있어서 청소가 훨씬 편해.\n✔ 특히 거울이나 세면대 수도꼭지처럼 물때 잘 끼는 곳에 뿌려두면 반짝반짝 광나는 거 볼 수 있음 ✨\n\n#살림꿀템 #자취템 #필수템 #욕실청소 #라벤더향",
+      "image_url": "https://shopping-phinf.pstatic.net/main_6024294/60242948115.jpg",
+      "detail_images": [
+        "https://shopping-phinf.pstatic.net/main_6024294/60242948115.jpg"
+      ],
+      "product_code": "",
+      "status": "pending"
     }
   ]
 }
