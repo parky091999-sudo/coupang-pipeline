@@ -105,6 +105,36 @@ def _keyword_reply(product_code: str) -> str:
     return f"프로필 링크 들어가서 [{product_code}] 검색하면 나와 👀"
 
 
+# ── 짧은/단순 반응 댓글 처리 ────────────────────────────────────────────────────
+_SHORT_REACTIONS = {"ㅋㅋ", "ㅎㅎ", "ㅠㅠ", "오오", "헐", "와", "대박", "굳", "ㄷㄷ", "진짜", "맞아", "맞지"}
+_SHORT_REPLY_EMOJIS = ["ㅎㅎ 😊", "ㅋㅋ", "😊", "ㅎㅎ", "그치 ㅎㅎ"]
+
+import random as _random
+
+
+def _classify_short_comment(text: str) -> str:
+    """단순 반응 댓글 분류.
+    반환: 'skip' (무시), 'emoji' (이모지만 답), 'normal' (일반 대댓글 생성)
+    """
+    t = (text or "").strip()
+    # 구두점·이모지 제거 후 실제 내용
+    clean = re.sub(r"[^\w가-힣]", "", t)
+    if not clean:
+        return "skip"
+    # 한 단어이고 8자 이하: 단순 반응
+    if len(clean) <= 8 and " " not in t.strip():
+        # 이미 알려진 감탄사면 스킵
+        if clean in _SHORT_REACTIONS or t in _SHORT_REACTIONS:
+            return "skip"
+        # 단어 하나(단순 명사 등 '카레', '냉장고')면 이모지만
+        return "emoji"
+    return "normal"
+
+
+def _short_reply() -> str:
+    return _random.choice(_SHORT_REPLY_EMOJIS)
+
+
 _OWN_USERNAME = None
 
 
@@ -257,13 +287,30 @@ async def check_and_reply_comments():
             # ── 2) 일반 댓글: 각 댓글에 개별 대댓글 (해당 댓글 id로 reply_to_id 지정) ──
             others = [r for r in new_replies if r not in kw_hits]
             for r in others[:3]:  # 회당 최대 3개
-                comment_text = f"@{r.get('username', '?')}: {r.get('text', '')}"
-                reply_text = generate_reply(comment_text)
-                if not reply_text:
+                raw_text   = r.get("text", "")
+                kind       = _classify_short_comment(raw_text)
+
+                if kind == "skip":
+                    # 단순 감탄사("ㅋㅋ", "헐" 등) → 무응답, 처리 완료 마킹
+                    logger.info(f"  짧은 감탄사 스킵: '{raw_text}'")
+                    post_replied.add(_comment_key(r.get("id", ""), raw_text))
+                    replied[post_id] = list(post_replied)
+                    save_replied(replied)
                     continue
+
+                if kind == "emoji":
+                    # 단어 하나 반응("카레", "냉장고" 등) → 이모지/짧은 반응
+                    reply_text = _short_reply()
+                    logger.info(f"  단어 댓글 → 짧게: '{raw_text}' → '{reply_text}'")
+                else:
+                    comment_text = f"@{r.get('username', '?')}: {raw_text}"
+                    reply_text   = generate_reply(comment_text)
+                    if not reply_text:
+                        continue
+
                 success = post_reply_to_thread(r.get("id", ""), reply_text)
                 if success:
-                    post_replied.add(_comment_key(r.get("id", ""), r.get("text", "")))
+                    post_replied.add(_comment_key(r.get("id", ""), raw_text))
                     replied[post_id] = list(post_replied)
                     save_replied(replied)
                     reply_count += 1
