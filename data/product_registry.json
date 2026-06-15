@@ -1,5 +1,5 @@
 {
-  "next_code": 25,
+  "next_code": 26,
   "blocked_item_ids": [],
   "products": {
     "https://link.coupang.com/re/PCSNAVERPCSDP?pageKey=8849967732&ctag=8849967732&lpt": {
@@ -241,6 +241,16 @@
       "registered_at": "2026-06-14T20:43:05.513593+09:00",
       "posted": true,
       "short_name": "세탁조 액상"
+    },
+    "https://link.coupang.com/re/PCSNAVERPCSDP?pageKey=8722130317&ctag=8722130317&lpt": {
+      "code": "025",
+      "name": "360도회전 올인원 유리창닦이 자동물분사 구정물수집 실리콘 스퀴지 찌든때제거 물때자국없이",
+      "url": "https://link.coupang.com/re/PCSNAVERPCSDP?pageKey=8722130317&ctag=8722130317&lptag=I28158261229&itemId=28158261229&vendorItemId=95113361307&spec=10305199",
+      "image_url": "https://shopping-phinf.pstatic.net/main_6044689/60446895390.jpg",
+      "category": "생활",
+      "registered_at": "2026-06-15T11:07:38.306980+09:00",
+      "posted": true,
+      "short_name": "유리창닦이 스퀴"
     }
   }
 }
